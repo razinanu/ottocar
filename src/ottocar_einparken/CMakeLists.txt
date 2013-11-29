@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(einparken_test)
+project(ottocar_einparken)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -9,6 +9,7 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   std_msgs
   message_generation
+  sensor_msgs
 )
 
 ## System dependencies are found with CMake's conventions
@@ -113,13 +114,19 @@ include_directories(
 # target_link_libraries(einparken_test_node
 #   ${catkin_LIBRARIES}
 # )
+add_executable(speed_publisher speed_publisher.cpp)
+target_link_libraries(speed_publisher ${catkin_LIBRARIES})
+
+add_executable(LaserScan LaserScan.cpp)
+target_link_libraries(LaserScan ${catkin_LIBRARIES})
+
+
 
 #############
 ## Install ##
 #############
 
-add_executable(speed_publisher speed_publisher.cpp)
-target_link_libraries(speed_publisher ${catkin_LIBRARIES})
+
 
 # all install targets should use catkin DESTINATION variables
 # See http://ros.org/doc/api/catkin/html/adv_user_guide/variables.html
