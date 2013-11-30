@@ -2,40 +2,26 @@
  * LaseScan.cpp
  *
  *  Created on: Nov 28, 2013
- *  Author: Raziyeh Ghassemi
+ *  Author: Razi Ghassemi
  */
-#include "ros/ros.h"
-#include "std_msgs/String.h"
-#include "sensor_msgs/LaserScan.h"
-using namespace std;
-int c = 0;
-float cosinus;
 
-enum laserState {
-	start, calculateBaseRange, calculateMaxPoint, calculateMinPoint, end
-};
+#include "LaserScan.h"
 
-laserState currentSearchState=start;
+laserState currentSearchState = start;
 
 void scanValues(const sensor_msgs::LaserScan laser) {
 
-	double Pi = 3.14159265;
-	float distanceHorizontal, baseDistance, baseVDistance, secondHDistance,
-			secondVDistance, space, baseHDistance;
-	float minVDistance = 0;
-    float angle = laser.angle_max;
-	int counter = 0;
-
-
-	if (c == 0) {
+	minVDistance = 0;
+	angle = laser.angle_max;
+	//just as first program, to scan just one time!
+       if (c == 0) {
 
 		for (unsigned int i = laser.ranges.size() - 1;
 				i > (laser.ranges.size()) / 2; i--) {
 
-
 			if (currentSearchState == start && laser.ranges[i] < 0.3)
 
-					{
+			{
 
 				currentSearchState = calculateBaseRange;
 				ROS_INFO(
@@ -59,23 +45,24 @@ if			(2 *laser.ranges[i] < laser.ranges[i - 1]&& laser.ranges[i-1]!=0.0&& laser.
 		}
 
 			//todo if another direction, it should be fixed
-			if (currentSearchState== calculateMaxPoint&&laser.ranges[i] > (laser.ranges[i -1])
+			if (currentSearchState
+					== calculateMaxPoint&&laser.ranges[i] > (laser.ranges[i -1])
 					&& laser.ranges[i-1]!=0.0&& laser.ranges[i-1] != INFINITY) {
 
-       currentSearchState= calculateMinPoint;
+currentSearchState			= calculateMinPoint;
 		}
 
-			if (currentSearchState== calculateMinPoint&& laser.ranges[i] <(laser.ranges[i -1])
+			if (currentSearchState
+					== calculateMinPoint&& laser.ranges[i] <(laser.ranges[i -1])
 					&& laser.ranges[i-1]!=0.0&& laser.ranges[i-1] != INFINITY) {
 
-
-			secondHDistance=laser.ranges[i]* cos(laser.angle_max - angle);
+secondHDistance			=laser.ranges[i]* cos(laser.angle_max - angle);
 			ROS_INFO("Second Point: angle=[%f],range[%d]=[%f]:  ", (angle * 180) / Pi, i, laser.ranges[i]);
 			ROS_INFO("Second Horizontal:%f ",secondHDistance);
-			if(abs(secondHDistance-baseHDistance)<0.05) {
+			if(abs(secondHDistance-baseHDistance)<MINDISTANCE) {
 
 				minVDistance=laser.ranges[i]
-						* sin(laser.angle_max - angle);
+				* sin(laser.angle_max - angle);
 				ROS_INFO("MIN value: angle=[%f],range[%d]=[%f]:  ", (angle * 180) / Pi, i, laser.ranges[i]);
 				ROS_INFO("MIN Vertical: %f   ",minVDistance);
 				currentSearchState = end;
