@@ -28,6 +28,8 @@ void Parking::scanValues(const sensor_msgs::LaserScan laser)
 	if (GapCalculator_)
 
 	{
+		GapCalculator gapcal;
+		gapcal.LaserScan(laser);
 
 	}
 
@@ -61,7 +63,7 @@ void Parking::init()
 int main(int argc, char** argv)
 {
 
-	ros::init(argc, argv, "collisionDetection");
+	ros::init(argc, argv, "parking");
 	Parking park;
 	try
 	{
