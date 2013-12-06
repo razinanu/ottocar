@@ -114,12 +114,9 @@ include_directories(
 # target_link_libraries(einparken_test_node
 #   ${catkin_LIBRARIES}
 # )
-add_executable(speed_publisher speed_publisher.cpp)
-target_link_libraries(speed_publisher ${catkin_LIBRARIES})
 
-add_executable(LaserScan LaserScan.cpp)
-target_link_libraries(LaserScan ${catkin_LIBRARIES})
-
+add_executable(parking Parking.cpp)
+target_link_libraries(parking ${catkin_LIBRARIES})
 
 
 #############
