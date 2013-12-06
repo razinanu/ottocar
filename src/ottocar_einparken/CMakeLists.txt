@@ -115,8 +115,12 @@ include_directories(
 #   ${catkin_LIBRARIES}
 # )
 
+<<<<<<< HEAD
 
 add_executable(parking Parking.cpp GapCalculator.cpp ParallelController.cpp DriveIntoGap.cpp)
+=======
+add_executable(parking Parking.cpp GapCalculator.cpp ParallelController.cpp)
+>>>>>>> 68ffa1e... calass GapCalculator, class ParallelController
 target_link_libraries(parking ${catkin_LIBRARIES})
 
 
