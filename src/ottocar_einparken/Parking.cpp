@@ -9,7 +9,7 @@
 #include "ConstPark.h"
 
 Parking::Parking() :
-		GapCalculator(true), ParallelController(true), PositionController(true), ParkingController(
+		GapCalculator_(true), ParallelController_(true), PositionController_(true), ParkingController_(
 				false)
 {
 
@@ -25,23 +25,24 @@ void Parking::scanValues(const sensor_msgs::LaserScan laser)
 	//todo each class create a COPY of Laser data!
 
 	//as long as the best Gap was found
-	if (GapCalculator)
+	if (GapCalculator_)
+
 	{
 
 	}
 
-	if (ParallelController)
+	if (ParallelController_)
 	{
 
 	}
 	//Whether the car is at correct Position to park.
 	//in case that car is at correct Position, PrkingController must be set to true
-	if (PositionController)
+	if (PositionController_)
 	{
 
 	}
 	//PrkingController set to true, if the car is at correct position to park
-	if (ParkingController)
+	if (ParkingController_)
 	{
 
 	}
