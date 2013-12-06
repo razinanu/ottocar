@@ -32,6 +32,8 @@ public:
 	virtual ~Parking();
 	void scanValues(const sensor_msgs::LaserScan laser);
 	void init();
+	bool GapCalculator, ParallelController, PositionController, ParkingController;
+
 };
 
 #endif /* PARKING_H_ */
