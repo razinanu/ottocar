@@ -35,6 +35,7 @@ void Parking::init(){
     hokuyoSubscriber =parkingNode.subscribe("/scan", 1, &Parking::scanValues, this);
     ros::Duration(1).sleep();
 }
+
 int main(int argc, char** argv) {
 
 	ros::init(argc, argv, "collisionDetection");
