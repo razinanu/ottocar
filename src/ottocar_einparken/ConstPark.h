@@ -1,5 +1,5 @@
 /*
- * Park.h
+ * ConstPark.h
  *
  *  Created on: Dec 6, 2013
  *      Author: Razi Ghassemi
@@ -12,6 +12,10 @@
  * Loop rates
  */
 const int LOOP_RATE = 20;
+
+//GapCalculatorConst
+const int MINDISTANCE = 0.05;
+const int FIRSTDISTANCE=0.3;
 
 //Lenkwerte
 const int STRAIGHTFORWARD = 383;

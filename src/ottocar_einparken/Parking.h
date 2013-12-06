@@ -15,6 +15,9 @@
 #include "std_msgs/String.h"
 #include <sstream>
 #include <iostream>
+#include "GapCalculator.h"
+#include "ConstPark.h"
+#include "ParallelController.h"
 
 class Parking {
 
