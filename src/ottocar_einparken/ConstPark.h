@@ -25,4 +25,10 @@ const int STRAIGHTFORWARD = 383;
 const int LEFT_MAX = 310;
 const int RIGHT_MAX = 430;
 
+//DriveIntoGap
+const float SECUREDISTANCE_BACK = 0.35;
+const float SECUREDISTANCE_FRONT = 0.15;
+const int PARKINGSPEED = 4;
+
+
 #endif /* PARK_H_ */

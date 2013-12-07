@@ -43,7 +43,7 @@ float ParkingController::getBackDistance()
 
 float ParkingController::getMinimalDistance()
 {
-	if(minimalDistance != -1)
+	if(minimalDistance == -1)
 	{
 		for(int laserIndex=0; laserIndex < laserData.size(); laserIndex++)
 		{
