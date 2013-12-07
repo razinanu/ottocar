@@ -27,14 +27,14 @@ void Parking::scanValues(const sensor_msgs::LaserScan laser)
 	if (GapCalculator_)
 
 	{
-		GapCalculator gapcal;
+
 		gapcal.LaserScanGapCal(laser);
 
 	}
 
 	if (ParallelController_)
 	{
-		ParallelController parallel;
+
 		parallel.LaserScanParallel(laser);
 	}
 	//Whether the car is at correct Position to park.
@@ -47,7 +47,7 @@ void Parking::scanValues(const sensor_msgs::LaserScan laser)
 	//PrkingController set to true, if the car is at correct position to park
 	if (ParkingController_)
 	{
-		ParkingController parkControll;
+
 		parkControll.LaserScanParkControll(laser);
 
 	}
@@ -82,7 +82,6 @@ int main(int argc, char** argv)
 	}
 
 	ros::Rate loop_rate(LOOP_RATE);
-
 
 	while (ros::ok)
 	{

@@ -39,6 +39,10 @@ public:
 	void scanValues(const sensor_msgs::LaserScan laser);
 	void init();
 	bool GapCalculator_, ParallelController_, PositionController_, ParkingController_;
+	GapCalculator gapcal;
+	ParallelController parallel;
+	PositionController position;
+	ParkingController parkControll;
 
 };
 
