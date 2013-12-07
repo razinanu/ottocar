@@ -41,7 +41,7 @@ void Parking::scanValues(const sensor_msgs::LaserScan laser)
 	//in case that car is at correct Position, PrkingController must be set to true
 	if (PositionController_)
 	{
-		PositionController position;
+
 		position.LaserScanPosition(laser);
 	}
 	//PrkingController set to true, if the car is at correct position to park
