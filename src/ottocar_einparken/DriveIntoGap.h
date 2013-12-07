@@ -74,21 +74,6 @@ private:
 	//temporär, bis sinnvolle Methoden von Simone kommen:
 	//###################################################
 
-	ros::Time currentTime;
-	ros::Time lastMark;
-
-	const ros::Duration firstH;
-	const ros::Duration spaceback;
-	const ros::Duration spacefront;
-
-	//Zeitbasierte erste Hälfte
-	bool firstHalfSimulation();
-
-	//zeitbasiert die rückwärtigen Sensoren simulieren
-	bool enoughSpaceBackSimulation();
-
-	//zeitbasiert die vorderen Sensoren simulieren
-	bool enoughSpaceFrontSimulation();
 
 
 };

@@ -9,10 +9,9 @@
 #include "ConstPark.h"
 
 
-DriveIntoGap::DriveIntoGap() : firstH(2), spaceback(4), spacefront(8)
+DriveIntoGap::DriveIntoGap()
 {
 	currentDrivingDirection = back;
-	//lastMark = currentTime.now();
 	minimalLaserDistance = -1;
 	gapSize = -1;
 }
@@ -26,8 +25,6 @@ DriveIntoGap::twoInts DriveIntoGap::drive(float minimalLaserDistance, float gapS
 {
 	this->minimalLaserDistance = minimalLaserDistance;
 	this->gapSize = gapSize;
-
-	ROS_INFO("mld: %f", minimalLaserDistance);
 
 	//test:
 	enoughSpaceInTheBack();
@@ -139,40 +136,3 @@ DriveIntoGap::twoInts DriveIntoGap::forward()
 
 	return speedAndAngle;
 }
-
-
-
-//temp:
-
-//
-//
-//bool DriveIntoGap::enoughSpaceBackSimulation()
-//{
-//	if(currentTime.now() > lastMark + spaceback)
-//	{
-//		return false;
-//	}
-//
-//	return true;
-//}
-//
-//bool DriveIntoGap::enoughSpaceFrontSimulation()
-//{
-//	if(currentTime.now() > lastMark + spacefront)
-//	{
-//		lastMark = currentTime.now();
-//		return false;
-//	}
-//
-//	return true;
-//}
-//
-//bool DriveIntoGap::firstHalfSimulation()
-//{
-//	if(currentTime.now() > lastMark + firstH)
-//	{
-//		return false;
-//	}
-//
-//	return true;
-//}
