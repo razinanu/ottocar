@@ -11,11 +11,14 @@
 /*
  * Loop rates
  */
-const int LOOP_RATE = 20;
+const int LOOP_RATE = 50;
+
+//ParkingConst
+const float BIGRANGE=99.0;
 
 //GapCalculatorConst
-const int MINDISTANCE = 0.05;
-const int FIRSTDISTANCE=0.3;
+const float MINDISTANCE = 0.05;
+const float FIRSTDISTANCE=0.3;
 
 //Lenkwerte
 const int STRAIGHTFORWARD = 383;

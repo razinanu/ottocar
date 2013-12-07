@@ -19,9 +19,19 @@ Parking::~Parking()
 	// TODO Auto-generated destructor stub
 }
 
-void Parking::scanValues(const sensor_msgs::LaserScan laser)
+void Parking::scanValues(sensor_msgs::LaserScan laser)
 {
 	//todo each class create a COPY of Laser data, if it changes the data!
+
+	for (unsigned int i = 0; i < laser.ranges.size(); i++)
+
+	{
+		if (laser.ranges[i] == INFINITY || isnan(laser.ranges[i]))
+		{
+			laser.ranges[i] = BIGRANGE;
+		}
+
+	}
 
 	//as long as the best Gap was found
 	if (GapCalculator_)
