@@ -7,7 +7,6 @@
 
 #include "Parking.h"
 
-
 Parking::Parking() :
 		GapCalculator_(true), ParallelController_(true), PositionController_(
 				true), ParkingController_(false)
@@ -22,7 +21,7 @@ Parking::~Parking()
 
 void Parking::scanValues(const sensor_msgs::LaserScan laser)
 {
-	//todo each class create a COPY of Laser data!
+	//todo each class create a COPY of Laser data, if it changes the data!
 
 	//as long as the best Gap was found
 	if (GapCalculator_)
@@ -35,18 +34,21 @@ void Parking::scanValues(const sensor_msgs::LaserScan laser)
 
 	if (ParallelController_)
 	{
-     ParallelController parallel;
-     parallel.LaserScanParallel(laser);
+		ParallelController parallel;
+		parallel.LaserScanParallel(laser);
 	}
 	//Whether the car is at correct Position to park.
 	//in case that car is at correct Position, PrkingController must be set to true
 	if (PositionController_)
 	{
-
+		PositionController position;
+		position.LaserScanPosition(laser);
 	}
 	//PrkingController set to true, if the car is at correct position to park
 	if (ParkingController_)
 	{
+		ParkingController parkControll;
+		parkControll.LaserScanParkControll(laser);
 
 	}
 
@@ -80,6 +82,7 @@ int main(int argc, char** argv)
 	}
 
 	ros::Rate loop_rate(LOOP_RATE);
+
 
 	while (ros::ok)
 	{

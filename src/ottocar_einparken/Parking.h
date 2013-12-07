@@ -18,6 +18,9 @@
 #include "GapCalculator.h"
 #include "ConstPark.h"
 #include "ParallelController.h"
+#include "ParkingController.h"
+#include "PositionController.h"
+
 
 class Parking {
 
