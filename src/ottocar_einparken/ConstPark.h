@@ -18,7 +18,7 @@ const float BIGRANGE=99.0;
 
 //GapCalculatorConst
 const float MINDISTANCE = 0.05;
-const float FIRSTDISTANCE=0.3;
+const float FIRSTDISTANCE = 0.3;
 
 //Lenkwerte
 const int STRAIGHTFORWARD = 383;
