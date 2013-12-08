@@ -18,6 +18,25 @@ public:
 	ParkingController();
 	void LaserScanParkControll(const sensor_msgs::LaserScan laser);
 	virtual ~ParkingController();
+
+	//distance to the front wall
+	float getFrontDistance();
+
+	//distance to the back wall
+	float getBackDistance();
+
+	//search for the minimal distance of your scanranges and return it
+	float getMinimalDistance();
+
+	//is the car at the front half of the gap?
+	bool firstHalf();
+
+private:
+
+	float minimalDistance;
+
+	//nan-Werte werden als -1 gespeichert
+	std::vector<float> laserData;
 };
 
 #endif /* PARKINGCONTROLLER_H_ */

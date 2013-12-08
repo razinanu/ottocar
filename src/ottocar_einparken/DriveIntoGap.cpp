@@ -6,13 +6,14 @@
  */
 
 #include "DriveIntoGap.h"
-#include "ros/ros.h"
 #include "ConstPark.h"
 
 
 DriveIntoGap::DriveIntoGap()
 {
-
+	currentDrivingDirection = back;
+	minimalLaserDistance = -1;
+	gapSize = -1;
 }
 
 DriveIntoGap::~DriveIntoGap()
@@ -20,17 +21,30 @@ DriveIntoGap::~DriveIntoGap()
 
 }
 
-DriveIntoGap::twoInts DriveIntoGap::drive()
+DriveIntoGap::twoInts DriveIntoGap::drive(float minimalLaserDistance, float gapSize)
 {
+	this->minimalLaserDistance = minimalLaserDistance;
+	this->gapSize = gapSize;
+
+	//test:
+	enoughSpaceInTheBack();
+	enoughSpaceOnTheFront();
+
+
 	twoInts speedAndAngle;	//[0]angle, [1]speed
 
-	if(enoughSpaceInTheBack())
+	if(currentDrivingDirection == back && enoughSpaceInTheBack())
 	{
 		speedAndAngle = backward();
 	}
+	else if(enoughSpaceOnTheFront())
+	{
+		currentDrivingDirection = forth;
+		speedAndAngle = forward();
+	}
 	else
 	{
-		speedAndAngle = forward();
+		currentDrivingDirection = back;
 	}
 
 	return speedAndAngle;
@@ -39,17 +53,46 @@ DriveIntoGap::twoInts DriveIntoGap::drive()
 bool DriveIntoGap::enoughSpaceInTheBack()
 {
 	//eine Methode von Simone aufrufen
+	if(gapSize == -1 || minimalLaserDistance == -1 || minimalLaserDistance + SECUREDISTANCE_BACK > gapSize)
+	{
+		ROS_INFO("not enough space - back");
+		return false;
+	}
+
 	return true;
+
+	//temp:
+	//return enoughSpaceBackSimulation();
+}
+
+bool DriveIntoGap::enoughSpaceOnTheFront()
+{
+	//eine Methode von Simone aufrufen
+	if(minimalLaserDistance < SECUREDISTANCE_FRONT)//10 cm bis zur Spitze, dann 5 cm Sicherheitsabstand
+	{
+		ROS_INFO("not enough space - front");
+		return false;
+	}
+
+	return true;
+
+	//temp:
+	//return enoughSpaceFrontSimulation();
 }
 
 bool DriveIntoGap::firstHalf()
 {
 	//eine Methode von Simone aufrufen
+
+	//temp:
+	//return firstHalfSimulation();
+
 	return true;
 }
 
 bool DriveIntoGap::isStraight()
 {
+	//eine Methode von Simone aufrufen
 	return false;
 }
 
@@ -62,19 +105,19 @@ DriveIntoGap::twoInts DriveIntoGap::backward()
 	if(firstHalf())	//solange er sich in der vorderen Hälfte befindet, ...
 	{
 		//... soll der Roboter maximal nach rechts einschlagen und rückwärts fahren
-		speedAndAngle.x = 8;
+		speedAndAngle.x = PARKINGSPEED;
 		speedAndAngle.y = RIGHT_MAX;
 	}
 	else	//ab der hinteren Hälfte muss er wieder zurücksetzen
 	{
 		if(isStraight())	//falls er bereits parallel zur Straße steht, setzt er noch ein kleines Stück zurück (muss er?)
 		{
-			speedAndAngle.x = 8;
+			speedAndAngle.x = PARKINGSPEED;
 			speedAndAngle.y = STRAIGHTFORWARD;
 		}
 		else	//ansonsten dreht er sich maximal nach links und fährt rückwärts
 		{
-			speedAndAngle.x = 8;
+			speedAndAngle.x = PARKINGSPEED;
 			speedAndAngle.y = LEFT_MAX;
 		}
 	}
@@ -85,9 +128,10 @@ DriveIntoGap::twoInts DriveIntoGap::backward()
 DriveIntoGap::twoInts DriveIntoGap::forward()
 {
 	//Todo nicht nur vorwärts, sondern Ausrichtung korrigieren
+	//Todo Geschwindigkeit variabel machen
 
 	twoInts speedAndAngle;
-	speedAndAngle.x = 8;
+	speedAndAngle.x = - PARKINGSPEED;
 	speedAndAngle.y = STRAIGHTFORWARD;
 
 	return speedAndAngle;

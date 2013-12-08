@@ -18,11 +18,17 @@ const float BIGRANGE=99.0;
 
 //GapCalculatorConst
 const float MINDISTANCE = 0.05;
-const float FIRSTDISTANCE=0.3;
+const float FIRSTDISTANCE = 0.3;
 
 //Lenkwerte
 const int STRAIGHTFORWARD = 383;
 const int LEFT_MAX = 310;
 const int RIGHT_MAX = 430;
+
+//DriveIntoGap
+const float SECUREDISTANCE_BACK = 0.35;
+const float SECUREDISTANCE_FRONT = 0.15;
+const int PARKINGSPEED = 4;
+
 
 #endif /* PARK_H_ */
