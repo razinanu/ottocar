@@ -2,7 +2,7 @@
  * GapCalculator.h
  *
  *  Created on: Dec 6, 2013
- *      Author: razi
+ *      Author: Razi Ghassemi
  */
 
 #ifndef GAPCALCULATOR_H_
@@ -20,7 +20,7 @@ class GapCalculator
 private:
 
 	float distanceHorizontal, baseDistance, baseVDistance, secondHDistance,
-				secondVDistance, space, baseHDistance,angle,minVDistance;
+				secondVDistance, space, baseHDistance,angle,minVDistance,HDistance;
 	double Pi;
 	int c ;
 
@@ -28,7 +28,8 @@ private:
 public:
 	GapCalculator();
 	virtual ~GapCalculator();
-	void LaserScanGapCal(const sensor_msgs::LaserScan laser);
+	bool LaserScanGapCal(const sensor_msgs::LaserScan laser);
+	float minPointFinder(const sensor_msgs::LaserScan laser,int i);
 };
 
 #endif /* GAPCALCULATOR_H_ */
