@@ -9,7 +9,7 @@
 
 Parking::Parking() :
 		GapCalculator_(true), ParallelController_(true), PositionController_(
-				true), ParkingController_(false)
+				false), ParkingController_(false)
 {
 
 }
@@ -38,7 +38,7 @@ void Parking::scanValues(sensor_msgs::LaserScan laser)
 
 	{
 
-		gapcal.LaserScanGapCal(laser);
+		PositionController_=gapcal.LaserScanGapCal(laser);
 
 	}
 
