@@ -15,6 +15,7 @@ const int LOOP_RATE = 50;
 
 //ParkingConst
 const float BIGRANGE=99.0;
+const float PARALLELDISTANCE=0.4;
 
 //GapCalculatorConst
 const float MINDISTANCE = 0.05;
