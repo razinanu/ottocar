@@ -39,6 +39,7 @@ private:
 	const float LEFTTURN;
 	const float TOFRONT;
 	bool right_turn;
+	bool left_turn;
 	bool straight_turn;
 
 	float minimalDistance;
