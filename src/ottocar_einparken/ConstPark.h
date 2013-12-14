@@ -26,10 +26,6 @@ const int STRAIGHTFORWARD = 383;
 const int LEFT_MAX = 310;
 const int RIGHT_MAX = 430;
 
-const float DISTANCE_RIGHT = 0.145;
-const float TOLEARNCE_DISTANCE_RIGHT = 0.01;
-const float DISTANCE_NO_OBSTACLE_RIGHT = 0.25;
-
 /*
  * ParallelController
  */
