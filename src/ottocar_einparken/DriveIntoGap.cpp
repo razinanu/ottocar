@@ -83,6 +83,7 @@ bool DriveIntoGap::enoughSpaceOnTheFront()
 bool DriveIntoGap::firstHalf()
 {
 	//eine Methode von Simone aufrufen
+	return parkingController.rightTurn();
 
 	//temp:
 	//return firstHalfSimulation();
