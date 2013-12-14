@@ -44,14 +44,16 @@ private:
 
 	float minimalDistance;
 
-	float horizontalDistance;
-	float verticalDistance;
+	float horizontalDistanceToObstacle;
+	float verticalDistanceToObstacle;
 
 	//nan-Werte werden als -1 gespeichert
 //	std::vector<float> laserData;
 	sensor_msgs::LaserScan laser;
 
-	int findEdge();
+	int findMinEdge(int);
+	int findMaxForHorizontal();
+	int findMaxForVertical();
 };
 
 #endif /* PARKINGCONTROLLER_H_ */
