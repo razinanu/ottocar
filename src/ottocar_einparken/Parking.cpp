@@ -9,7 +9,7 @@
 
 Parking::Parking() :
 		GapCalculator_(true), ParallelController_(true), PositionController_(
-				false), ParkingController_(false)
+				true), ParkingController_(false)
 {
 
 }
@@ -19,7 +19,7 @@ Parking::~Parking()
 	// TODO Auto-generated destructor stub
 }
 
-void Parking::scanValues(sensor_msgs::LaserScan laser)
+void Parking::scanValues(const sensor_msgs::LaserScan laser)
 {
 	//todo each class create a COPY of Laser data, if it changes the data!
 
@@ -38,14 +38,13 @@ void Parking::scanValues(sensor_msgs::LaserScan laser)
 
 	{
 
-		PositionController_=gapcal.LaserScanGapCal(laser);
+		gapcal.LaserScanGapCal(laser);
 
 	}
 
 	if (ParallelController_)
 	{
-
-		parallel.LaserScanParallel(laser);
+		parallel.laserScanParallel(laser);
 	}
 	//Whether the car is at correct Position to park.
 	//in case that car is at correct Position, PrkingController must be set to true
@@ -66,13 +65,13 @@ void Parking::scanValues(sensor_msgs::LaserScan laser)
 
 void Parking::init()
 {
-
 	angle_pub = parkingNode.advertise<std_msgs::Int16>("angle_cmd", 1);
 	speed_pub = parkingNode.advertise<std_msgs::Int8>("speed_cmd", 1);
 	hokuyoSubscriber = parkingNode.subscribe("/scan", 1, &Parking::scanValues,
 			this);
 	ros::Duration(1).sleep();
 }
+
 int main(int argc, char** argv)
 {
 
@@ -93,11 +92,23 @@ int main(int argc, char** argv)
 
 	ros::Rate loop_rate(LOOP_RATE);
 
+//	DriveToGap driver;
+//	DriveToGap::driveData data;
+//	data.angle.data = 387;
+//	data.speed.data = 0;
+
 	while (ros::ok)
 	{
 
 		ros::spinOnce();
+/*
+		data = driver.driveToGap(park.parallel.getDistanceRight(), park.parallel.getDistanceFront());
+
+		park.angle_pub.publish(data.angle);
+		park.speed_pub.publish(data.speed);
+*/
 		loop_rate.sleep();
 	}
+
 	return 0;
 }
