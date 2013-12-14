@@ -12,8 +12,8 @@
 DriveIntoGap::DriveIntoGap()
 {
 	currentDrivingDirection = back;
-	minimalLaserDistance = -1;
 	gapSize = -1;
+	minimalLaserDistance = -1;
 }
 
 DriveIntoGap::~DriveIntoGap()
@@ -21,19 +21,20 @@ DriveIntoGap::~DriveIntoGap()
 
 }
 
-DriveIntoGap::twoInts DriveIntoGap::drive(float minimalLaserDistance, float gapSize)
+DriveIntoGap::twoInts DriveIntoGap::drive(sensor_msgs::LaserScan laser, float gapSize)
 {
-	this->minimalLaserDistance = minimalLaserDistance;
 	this->gapSize = gapSize;
+	parkingController.LaserScanParkControll(laser);
+	this->minimalLaserDistance = parkingController.getMinimalDistance();
 
 	//test:
-	enoughSpaceInTheBack();
-	enoughSpaceOnTheFront();
+//	enoughSpaceInTheBack();
+//	enoughSpaceOnTheFront();
 
 
-	twoInts speedAndAngle;	//[0]angle, [1]speed
+	twoInts speedAndAngle;	//[1]angle, [0]speed
 
-	if(currentDrivingDirection == back && enoughSpaceInTheBack())
+	if(currentDrivingDirection == back)// && enoughSpaceInTheBack())
 	{
 		speedAndAngle = backward();
 	}
@@ -45,6 +46,7 @@ DriveIntoGap::twoInts DriveIntoGap::drive(float minimalLaserDistance, float gapS
 	else
 	{
 		currentDrivingDirection = back;
+		speedAndAngle = backward();
 	}
 
 	return speedAndAngle;
@@ -82,8 +84,8 @@ bool DriveIntoGap::enoughSpaceOnTheFront()
 
 bool DriveIntoGap::firstHalf()
 {
-	//eine Methode von Simone aufrufen
 	return parkingController.rightTurn();
+
 
 	//temp:
 	//return firstHalfSimulation();
@@ -118,10 +120,12 @@ DriveIntoGap::twoInts DriveIntoGap::backward()
 		}
 		else	//ansonsten dreht er sich maximal nach links und fährt rückwärts
 		{
-			speedAndAngle.x = PARKINGSPEED;
+//			speedAndAngle.x = PARKINGSPEED;
+			speedAndAngle.x = 0;
 			speedAndAngle.y = LEFT_MAX;
 		}
 	}
+
 
 	return speedAndAngle;
 }

@@ -38,6 +38,7 @@ private:
 		back, forth
 	};
 
+	float minimalLaserDistance;
 	DirectionStatus currentDrivingDirection;
 	float gapSize;
 	ParkingController parkingController;
