@@ -10,6 +10,8 @@
 
 
 #include "ros/ros.h"
+#include "sensor_msgs/LaserScan.h"
+#include "ParkingController.h"
 
 class DriveIntoGap {
 public:
@@ -27,7 +29,7 @@ public:
 	 * [1]: angle
 	 * [0]: speed
 	 */
-	twoInts drive(float minimalLaserDistance, float gapSize);
+	twoInts drive(sensor_msgs::LaserScan laser, float gapSize);
 
 private:
 
@@ -36,10 +38,10 @@ private:
 		back, forth
 	};
 
-	DirectionStatus currentDrivingDirection;
 	float minimalLaserDistance;
+	DirectionStatus currentDrivingDirection;
 	float gapSize;
-
+	ParkingController parkingController;
 	/**
 	 * Is the Robot able to drive backwards? Or is the wall already too close?
 	 */

@@ -2,7 +2,7 @@
  * ParkingController.h
  *
  *  Created on: Dec 7, 2013
- *      Author: Razi Ghassemi
+ *      Author: Simone Bexten
  */
 
 #ifndef PARKINGCONTROLLER_H_
@@ -11,6 +11,7 @@
 #include "ros/ros.h"
 #include "std_msgs/String.h"
 #include "sensor_msgs/LaserScan.h"
+#include "ConstPark.h"
 
 class ParkingController
 {
@@ -29,14 +30,30 @@ public:
 	float getMinimalDistance();
 
 	//is the car at the front half of the gap?
-	bool firstHalf();
+	bool rightTurn();
+	bool stopTurn();
+	void turnDistance(const sensor_msgs::LaserScan laser);
 
 private:
+	const float RIGHTTURN;
+	const float LEFTTURN;
+	const float TOFRONT;
+	bool right_turn;
+	bool left_turn;
+	bool straight_turn;
 
 	float minimalDistance;
 
+	float horizontalDistanceToObstacle;
+	float verticalDistanceToObstacle;
+
 	//nan-Werte werden als -1 gespeichert
-	std::vector<float> laserData;
+//	std::vector<float> laserData;
+	sensor_msgs::LaserScan laser;
+
+	int findMinEdge(int);
+	int findMaxForHorizontal();
+	int findMaxForVertical();
 };
 
 #endif /* PARKINGCONTROLLER_H_ */
