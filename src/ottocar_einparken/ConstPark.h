@@ -22,21 +22,24 @@ const float MINDISTANCE = 0.05;
 const float FIRSTDISTANCE = 0.3;
 
 //Lenkwerte
-const int STRAIGHTFORWARD = 383;
-const int LEFT_MAX = 310;
-const int RIGHT_MAX = 430;
+const int STRAIGHTFORWARD = 0;
+const int LEFT_MAX = -127;
+const int RIGHT_MAX = 126;
 
 /*
  * ParallelController
  */
 //Entfernung d, in der ein Karton stehen sollte
-const float TARGET_DISTANCE = 0.2;
+const float TARGET_DISTANCE = 0.17;
 
 //Toleranz; Abweichung darf r*t betragen
-const float TOLERANCE = 2.0;
+const float TOLERANCE = 1.3;
 
 //Faktor fuer das Verhaeltnis von a und f
 const float CONFIDENCE = 1.5;
+
+//Begrenzung des Sichtfeldes
+const float MAX_RANGE = 2.0;
 
 //Wert, bis zu dem die Laserscans ausgewertet werden
 const int SEARCH_SPACE = 256;

@@ -18,7 +18,6 @@
 #include "std_msgs/String.h"
 #include "sensor_msgs/LaserScan.h"
 #include "ConstPark.h"
-//#include "math.h"
 
 class ParallelController
 {
@@ -65,7 +64,7 @@ public:
 	 *
 	 * Diese Funktion gibt den (fliessenden) Mittelwert der relevanten Daten fuer die Ausrichtung zurueck. Dieses ist zum einen
 	 * der seitliche Abstand zu den Kartons (side_d), sowie der Winkel zu den Kartons (epsilon). Diese Werte sind berechnet und
-	 * nicht gemessen. Schwankungen von ca. +-1cm sowie +-1° bei unveraenderter Position sind normal.
+	 * nicht gemessen. Schwankungen von ca. +-1cm sowie +-5° bei unveraenderter Position sind normal.
 	 *
 	 * \return    	orientationData		seitlicher Abstand zu den Kartons in Metern sowie der Winkel zu den Kartons in Grad
 	 *
@@ -77,7 +76,7 @@ public:
 	 *
 	 * Diese Funktion gibt den (fliessenden) Median der relevanten Daten fuer die Ausrichtung zurueck. Dieses ist zum einen
 	 * der seitliche Abstand zu den Kartons (side_d), sowie der Winkel zu den Kartons (epsilon). Diese Werte sind berechnet und
-	 * nicht gemessen. Schwankungen von ca. +-1cm sowie +-1° bei unveraenderter Position sind normal.
+	 * nicht gemessen. Schwankungen von ca. +-1cm sowie +-5° bei unveraenderter Position sind normal.
 	 *
 	 * \return    	orientationData		seitlicher Abstand zu den Kartons in Metern sowie der Winkel zu den Kartons in Grad
 	 *
@@ -144,10 +143,13 @@ private:
 	 * \return    	gibt den Index zurueck, bei dem ein lokales Minimum gefunden wurde oder -1
 	 *
 	 */
-	int findMinimum(const sensor_msgs::LaserScan &laser, int index);
+	int findMinimum(const sensor_msgs::LaserScan &laser, int firstPoint, int lastPoint);
 
 	///schreibt die uebergebenen Werte in den Ringpuffer
 	void writeToBuffer(float value_D, float value_epsilon);
+
+	///gibt den Inhalt des Buffers auf der Konsole aus
+	void printBuffer();
 };
 
 #endif /* PARALLELCONTROLLER_H_ */
