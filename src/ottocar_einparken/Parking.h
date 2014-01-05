@@ -22,13 +22,13 @@
 #include "PositionController.h"
 
 
+#include "MoveToGap.h"
+
 class Parking {
 
 	private:
 
 	ros::NodeHandle parkingNode;
-	ros::Publisher angle_pub;
-	ros::Publisher speed_pub;
 	ros::Subscriber hokuyoSubscriber;
 
 
@@ -43,6 +43,9 @@ public:
 	ParallelController parallel;
 	PositionController position;
 	ParkingController parkControll;
+
+	ros::Publisher angle_pub;
+	ros::Publisher speed_pub;
 
 };
 

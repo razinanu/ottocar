@@ -115,7 +115,7 @@ include_directories(
 #   ${catkin_LIBRARIES}
 # )
 
-add_executable(parking Parking.cpp GapCalculator.cpp ParallelController.cpp DriveIntoGap.cpp ParkingController.cpp PositionController.cpp)
+add_executable(parking Parking.cpp GapCalculator.cpp ParallelController.cpp MoveToGap.cpp DriveIntoGap.cpp ParkingController.cpp PositionController.cpp)
 target_link_libraries(parking ${catkin_LIBRARIES})
 
 
