@@ -7,7 +7,8 @@
 
 #include "ParkingController.h"
 
-ParkingController::ParkingController()
+
+ParkingController::ParkingController(ros::NodeHandle nodeHandle)
 {
 	minimalDistance = -1;
 }

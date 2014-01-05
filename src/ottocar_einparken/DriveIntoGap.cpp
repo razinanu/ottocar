@@ -27,8 +27,8 @@ DriveIntoGap::twoInts DriveIntoGap::drive(float minimalLaserDistance, float gapS
 	this->gapSize = gapSize;
 
 	//test:
-	enoughSpaceInTheBack();
-	enoughSpaceOnTheFront();
+	//enoughSpaceInTheBack();
+	//enoughSpaceOnTheFront();
 
 
 	twoInts speedAndAngle;	//[0]angle, [1]speed

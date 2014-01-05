@@ -71,6 +71,7 @@ void Parking::init()
 	speed_pub = parkingNode.advertise<std_msgs::Int8>("speed_cmd", 1);
 	hokuyoSubscriber = parkingNode.subscribe("/scan", 1, &Parking::scanValues,
 			this);
+
 	ros::Duration(1).sleep();
 }
 int main(int argc, char** argv)
