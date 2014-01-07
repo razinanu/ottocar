@@ -8,12 +8,12 @@
 
 //INFO auf 'true' setzen, um Zwischenwerte der Berechnungen auszugeben
 #ifndef INFO
-#define INFO true
+#define INFO false
 #endif
 
 //LASER_DATA auf 'true' setzen, um Zwischenwerte der Berechnungen auszugeben
 #ifndef LASER_DATA
-#define LASER_DATA true
+#define LASER_DATA false
 #endif
 
 #ifndef PARALLELCONTROLLER_H_
@@ -93,6 +93,9 @@ public:
 	 *
 	 */
 	orientationData getMedian();
+
+	///gibt false zurueck, wenn vor dem Auto ein Hindernis steht
+	bool driveEnable();
 
 private:
 
@@ -181,6 +184,9 @@ private:
 
 	///gibt den Inhalt des Buffers auf der Konsole aus
 	void printBuffer();
+
+	///liefert true zurueck, wenn der Bot neben einem Karton steht
+	bool botBesideCarton();
 };
 
 #endif /* PARALLELCONTROLLER_H_ */

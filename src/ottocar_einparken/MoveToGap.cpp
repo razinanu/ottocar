@@ -23,19 +23,19 @@ MoveToGap::driveData MoveToGap::moveToGap(ParallelController::orientationData da
 	int angleValue = (TARGET_DISTANCE - data.distance) * 1000 * (-1);
 	if (angleValue < 50)
 	{
-//		result.angle.data = angleValue * 2;
-//		result.speed.data = 6;
+		result.angle.data = angleValue * 1.2;
+		result.speed.data = -8;
 
-		result.angle.data = 0;
-		result.speed.data = 0;
+//		result.angle.data = 0;
+//		result.speed.data = 0;
 
-//		ROS_INFO("[MTG]: Lenkung: %d", angleValue);
+		ROS_INFO("[MTG]: Lenkung: %d | %2.4f", angleValue, data.distance);
 	}
 	else
 	{
 		result.angle.data = 0;
 		result.speed.data = 0;
-//		ROS_WARN("[MTG]: Lenkung: %d", angleValue);
+		ROS_WARN("[MTG]: Lenkung: %d | %2.4f", angleValue, data.distance);
 	}
 
 
