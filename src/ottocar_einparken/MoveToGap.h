@@ -24,7 +24,7 @@ public:
 	MoveToGap();
 	virtual ~MoveToGap();
 
-	driveData moveToGap(float distanceRight, float distanceFront);
+	driveData moveToGap(ParallelController::orientationData data);
 private:
 };
 

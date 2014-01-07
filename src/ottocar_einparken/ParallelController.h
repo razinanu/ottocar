@@ -8,7 +8,12 @@
 
 //INFO auf 'true' setzen, um Zwischenwerte der Berechnungen auszugeben
 #ifndef INFO
-#define INFO false
+#define INFO true
+#endif
+
+//LASER_DATA auf 'true' setzen, um Zwischenwerte der Berechnungen auszugeben
+#ifndef LASER_DATA
+#define LASER_DATA true
 #endif
 
 #ifndef PARALLELCONTROLLER_H_
@@ -44,6 +49,12 @@ public:
 	{
 		float distance;
 		float angle;
+	};
+
+	struct triangleSide
+	{
+		float firstPoint;
+		float lastPoint;
 	};
 
 	/**
@@ -100,6 +111,10 @@ private:
 	 */
 	triangleData calculateTriangle(const sensor_msgs::LaserScan &laser, int point_B, int point_C);
 
+	triangleData calculateBetterTriangle(const sensor_msgs::LaserScan &laser, int firstPoint, int lastPoint);
+
+	triangleData calculateBetterTriangle2(const sensor_msgs::LaserScan &laser, int firstPoint, int lastPoint, int firstPointLastCarton, float side_C);
+
 	/**
 	 * \brief  Suche des Endes eines Kartons
 	 *
@@ -144,6 +159,22 @@ private:
 	 *
 	 */
 	int findMinimum(const sensor_msgs::LaserScan &laser, int firstPoint, int lastPoint);
+
+	/**
+	 * \brief Berechnung einer Regressionsgeraden
+	 *
+	 * Diese Funktion berechnet eine Regressionsgerade fuer die uebergebenen Laserdaten zwischen
+	 * dem Start- und Endpunkt. Zurueckgegeben wird der Y-Wert des Punktes 'point', der auf dieser
+	 * Geraden liegt.
+	 *
+	 * \param		start	erster Punkt, der fuer die Gerade verwendet wird
+	 * \param		end		letzter Punkt, der fuer die Gerade verwendet wird; end > start
+	 * \param		point	der Punkt auf der Geraden, dessen Y-Wert zurueckgegeben werden soll; start <= point <= end
+	 * \param		laser	Datenarray des Laserscanners
+	 */
+	float calculateRegressionLine(int start, int end, int point, const sensor_msgs::LaserScan &laser);
+
+	triangleSide calculateRegressionLine(int start, int end, int pointB, int pointC, const sensor_msgs::LaserScan &laser);
 
 	///schreibt die uebergebenen Werte in den Ringpuffer
 	void writeToBuffer(float value_D, float value_epsilon);

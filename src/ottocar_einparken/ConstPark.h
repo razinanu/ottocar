@@ -11,7 +11,7 @@
 /*
  * Loop rates
  */
-const int LOOP_RATE = 50;
+const int LOOP_RATE = 10;
 
 //ParkingConst
 const float BIGRANGE=99.0;
