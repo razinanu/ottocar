@@ -20,8 +20,7 @@
 #include "ParallelController.h"
 #include "ParkingController.h"
 #include "PositionController.h"
-
-
+#include "DriveIntoGap.h"
 #include "MoveToGap.h"
 
 class Parking {
@@ -43,6 +42,7 @@ public:
 	ParallelController parallel;
 	PositionController position;
 	ParkingController parkControll;
+	DriveIntoGap driveIntoGap;
 
 	ros::Publisher angle_pub;
 	ros::Publisher speed_pub;

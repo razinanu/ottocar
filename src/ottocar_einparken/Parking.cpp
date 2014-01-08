@@ -48,9 +48,12 @@ void Parking::scanValues(sensor_msgs::LaserScan laser)
 		position.LaserScanPosition(laser);
 	}
 	//PrkingController set to true, if the car is at correct position to park
+	ParkingController_ = true;
 	if (ParkingController_)
 	{
+		float size = 60.0;
 		parkControll.LaserScanParkControll(laser);
+		driveIntoGap.drive(laser, size);
 	}
 
 }
