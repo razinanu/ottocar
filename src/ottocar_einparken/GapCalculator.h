@@ -4,7 +4,6 @@
  *  Created on: Dec 6, 2013
  *      Author: Razi Ghassemi
  */
-
 #ifndef GAPCALCULATOR_H_
 #define GAPCALCULATOR_H_
 
@@ -13,15 +12,19 @@
 #include "sensor_msgs/LaserScan.h"
 using namespace std;
 enum laserState {
-	start, calculateBaseRange, calculateMaxPoint, calculateMinPoint, end
+	start, calculateBaseRange, calculateMaxPoint, calculateMinPoint,followGap, end
 };
 class GapCalculator
 {
 private:
 
 	float distanceHorizontal, baseDistance, baseVDistance, secondHDistance,
-				secondVDistance, space, baseHDistance,angle,minVDistance,HDistance;
+				secondVDistance, space, baseHDistance,angle,minVDistance,HDistance,gapDistance;
+	void  minPointFinder(const sensor_msgs::LaserScan laser);
+	float getGapDistance();
+
 	double Pi;
+	bool writeGapFined;
 	int c ;
 
 
@@ -29,7 +32,8 @@ public:
 	GapCalculator();
 	virtual ~GapCalculator();
 	bool LaserScanGapCal(const sensor_msgs::LaserScan laser);
-	float minPointFinder(const sensor_msgs::LaserScan laser,int i);
+
+
 };
 
 #endif /* GAPCALCULATOR_H_ */
