@@ -35,23 +35,23 @@ void Parking::scanValues(sensor_msgs::LaserScan laser)
 	}
 
 	//as long as the best Gap was found
-//	if (GapCalculator_)
-//	{
-//		gapcal.LaserScanGapCal(laser);
-//	}
-//
-//	if (ParallelController_)
-//	{
-//		parallel.laserScanParallel(laser);
-//	}
-//	//Whether the car is at correct Position to park.
-//	//in case that car is at correct Position, PrkingController must be set to true
-//	if (PositionController_)
-//	{
-//		position.LaserScanPosition(laser);
-//	}
+	if (GapCalculator_)
+	{
+		gapcal.LaserScanGapCal(laser);
+	}
+
+	if (ParallelController_)
+	{
+		parallel.laserScanParallel(laser);
+	}
+	//Whether the car is at correct Position to park.
+	//in case that car is at correct Position, PrkingController must be set to true
+	if (PositionController_)
+	{
+		position.LaserScanPosition(laser);
+	}
 	//ParkingController set to true, if the car is at correct position to park
-	ParkingController_ = true;
+//	ParkingController_ = true;
 	if (ParkingController_)
 	{
 		float size = 60.0;
