@@ -24,8 +24,13 @@ public:
 	MoveToGap();
 	virtual ~MoveToGap();
 
-	driveData moveToGap(ParallelController::orientationData data);
+	driveData moveToGap(float dataIR, float distanceToGap);
 private:
+	bool cartonSeen;
+	bool distanceGot;
+	ros::Time gapBegin;
+	ros::Time distanceFound;
+	float timeToDrive;
 };
 
 #endif /* MOVETOGAP_H_ */
