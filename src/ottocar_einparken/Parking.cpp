@@ -156,7 +156,7 @@ int main(int argc, char** argv)
 			//
 			if (park.parallel.driveEnable())
 			{
-				data = driver.moveToGap(park.distanceSide);
+				data = driver.moveToGap(park.distanceSide, park.gapcal.getGapDistance());
 
 				if (data.speed.data == 0)
 				{

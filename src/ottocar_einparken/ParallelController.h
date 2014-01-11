@@ -23,6 +23,7 @@
 #include "std_msgs/String.h"
 #include "sensor_msgs/LaserScan.h"
 #include "ConstPark.h"
+#include <iostream>
 
 class ParallelController
 {
