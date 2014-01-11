@@ -65,6 +65,8 @@ void ParallelController::laserScanParallel(const sensor_msgs::LaserScan laser)
 
 	//START
 
+	/*
+
 //ersten gueltigen Wert finden
 	pointCartonStart = findCarton(laser, indexOfFirstMeasurement);
 	if (pointCartonStart < 0)
@@ -171,6 +173,8 @@ void ParallelController::laserScanParallel(const sensor_msgs::LaserScan laser)
 	ROS_INFO("[PLC]: -------------------------------------- ");
 #endif
 //	ROS_INFO("[PLC]: side_d Median: %2.8f", getMedian().distance);
+
+	*/
 }
 
 ParallelController::triangleData ParallelController::calculateTriangle(
