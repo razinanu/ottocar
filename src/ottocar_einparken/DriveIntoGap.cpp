@@ -21,7 +21,7 @@ DriveIntoGap::~DriveIntoGap()
 
 }
 
-DriveIntoGap::twoInts DriveIntoGap::drive(sensor_msgs::LaserScan laser, float gapSize, float currentIRVoltage)
+DriveIntoGap::twoInts DriveIntoGap::drive(sensor_msgs::LaserScan laser, float gapSize, float distanceBack, float distanceSide)
 {
 	this->gapSize = gapSize;
 	parkingController.LaserScanParkControll(laser);

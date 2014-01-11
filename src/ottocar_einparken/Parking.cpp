@@ -11,7 +11,6 @@ Parking::Parking() :
 		GapCalculator_(true), ParallelController_(true), PositionController_(
 				true), ParkingController_(false)
 {
-	currentInfraredValue = 0;
 }
 
 Parking::~Parking()
@@ -47,17 +46,16 @@ void Parking::scanValues(sensor_msgs::LaserScan laser)
 	{
 		position.LaserScanPosition(laser);
 	}
-	//PrkingController set to true, if the car is at correct position to park
+	//ParkingController set to true, if the car is at correct position to park
 	if (ParkingController_)
 	{
-		//parkControll.LaserScanParkControll(laser);
-		intoGap.drive(laser, 0.9, currentInfraredValue);			//---------------> delete magic numbers!
+		driveIntoGap.drive(laser, 0.9, distanceBack, distanceSide);			//---------------> delete magic numbers!
 
 	}
 
 }
 
-float Parking::linearlize(float value)
+float Parking::linearize(float value)
 {
 	float error = 40.0;
 
@@ -83,13 +81,13 @@ float Parking::linearlize(float value)
 
 void Parking::ir1Values(std_msgs::Float32 sensor)
 {
-	this->distanceBack = linearlize(sensor.data);
+	this->distanceBack = linearize(sensor.data);
 	ROS_INFO("[PAR]: IR1: (V,%f) and (D,%f)", sensor.data, distanceBack);
 }
 
 void Parking::ir2Values(const std_msgs::Float32 sensor)
 {
-	this->distanceSide = linearlize(sensor.data);
+	this->distanceSide = linearize(sensor.data);
 	ROS_INFO("[PAR]: IR2: (V,%f) and (D,%f)", sensor.data, distanceSide);
 }
 
@@ -128,6 +126,11 @@ int main(int argc, char** argv)
 
 	while (ros::ok)
 	{
+		if(park.parallel.driveEnable())
+		{
+
+		}
+
 		ros::spinOnce();
 		loop_rate.sleep();
 	}

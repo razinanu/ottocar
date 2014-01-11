@@ -56,7 +56,7 @@ public:
 
 	void ir1Values(const std_msgs::Float32 sensor);
 	void ir2Values(const std_msgs::Float32 sensor);
-	float linearlize(float sensor);
+	float linearize(float sensor);
 
 };
 

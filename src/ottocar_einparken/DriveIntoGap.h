@@ -30,7 +30,7 @@ public:
 	 * [1]: angle
 	 * [0]: speed
 	 */
-	twoInts drive(sensor_msgs::LaserScan laser, float gapSize, float currentIRVoltage);
+	twoInts drive(sensor_msgs::LaserScan laser, float gapSize, float distanceBack, float distanceSide);
 
 private:
 
