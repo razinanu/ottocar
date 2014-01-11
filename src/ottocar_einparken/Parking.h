@@ -31,18 +31,22 @@ class Parking {
 	ros::NodeHandle parkingNode;
 	ros::Subscriber hokuyoSubscriber;
 
+	ros::Subscriber backIRSubscriber;
+	DriveIntoGap intoGap;
 
+	float currentInfraredValue;	//voltage
 
 public:
 	Parking();
 	virtual ~Parking();
 	void scanValues(const sensor_msgs::LaserScan laser);
+	void getIRData(const std_msgs::Float32 infrared);
 	void init();
 	bool GapCalculator_, ParallelController_, PositionController_, ParkingController_;
 	GapCalculator gapcal;
 	ParallelController parallel;
 	PositionController position;
-	ParkingController parkControll;
+	//ParkingController parkControll;
 
 	ros::Publisher angle_pub;
 	ros::Publisher speed_pub;

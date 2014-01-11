@@ -16,7 +16,7 @@
 class ParkingController
 {
 public:
-	ParkingController(ros::NodeHandle);
+	ParkingController();
 	void LaserScanParkControll(const sensor_msgs::LaserScan laser);
 	virtual ~ParkingController();
 
@@ -34,6 +34,8 @@ public:
 	bool stopTurn();
 	void turnDistance(const sensor_msgs::LaserScan laser);
 
+	//void getIRData(const std_msgs::Float32 infrared);
+
 private:
 	const float RIGHTTURN;
 	const float LEFTTURN;
@@ -45,13 +47,11 @@ private:
 	void subBackIR();
 
 	float minimalDistance;
-	ros::Subscriber backwardIR;
 
 	float horizontalDistanceToObstacle;
 	float verticalDistanceToObstacle;
 
 	//nan-Werte werden als -1 gespeichert
-//	std::vector<float> laserData;
 	sensor_msgs::LaserScan laser;
 
 	int findMinEdge(int);

@@ -11,7 +11,7 @@ Parking::Parking() :
 		GapCalculator_(true), ParallelController_(true), PositionController_(
 				true), ParkingController_(false)
 {
-
+	currentInfraredValue = 0;
 }
 
 Parking::~Parking()
@@ -50,9 +50,16 @@ void Parking::scanValues(sensor_msgs::LaserScan laser)
 	//PrkingController set to true, if the car is at correct position to park
 	if (ParkingController_)
 	{
-		parkControll.LaserScanParkControll(laser);
+		//parkControll.LaserScanParkControll(laser);
+		intoGap.drive(laser, 0.9, currentInfraredValue);			//---------------> delete magic numbers!
+
 	}
 
+}
+
+void Parking::getIRData(std_msgs::Float32 infrared)
+{
+	currentInfraredValue = infrared.data;
 }
 
 void Parking::init()
@@ -61,6 +68,7 @@ void Parking::init()
 	speed_pub = parkingNode.advertise<std_msgs::Int8>("speed_cmd", 1);
 	hokuyoSubscriber = parkingNode.subscribe("/scan", 1, &Parking::scanValues,
 			this);
+	backIRSubscriber = parkingNode.subscribe("/sensor_IR1", 1, &Parking::getIRData, this);
 
 	ros::Duration(1).sleep();
 }
