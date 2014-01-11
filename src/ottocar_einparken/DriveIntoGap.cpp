@@ -31,7 +31,6 @@ DriveIntoGap::twoInts DriveIntoGap::drive(sensor_msgs::LaserScan laser, float ga
 	//enoughSpaceInTheBack();
 	//enoughSpaceOnTheFront();
 
-
 	twoInts speedAndAngle;	//[1]angle, [0]speed
 
 	if(currentDrivingDirection == back)// && enoughSpaceInTheBack())
@@ -107,22 +106,24 @@ DriveIntoGap::twoInts DriveIntoGap::backward()
 
 	if(firstHalf())	//solange er sich in der vorderen Hälfte befindet, ...
 	{
+		ROS_ERROR("[DriveIntoGap] first half");
 		//... soll der Roboter maximal nach rechts einschlagen und rückwärts fahren
-		speedAndAngle.x = PARKINGSPEED;
-		speedAndAngle.y = RIGHT_MAX;
+		speedAndAngle.speed = PARKINGSPEED;
+		speedAndAngle.angle = RIGHT_MAX;
 	}
 	else	//ab der hinteren Hälfte muss er wieder zurücksetzen
 	{
+		ROS_ERROR("[DriveIntoGap] second half");
 		if(isStraight())	//falls er bereits parallel zur Straße steht, setzt er noch ein kleines Stück zurück (muss er?)
 		{
-			speedAndAngle.x = PARKINGSPEED;
-			speedAndAngle.y = STRAIGHTFORWARD;
+			speedAndAngle.speed = PARKINGSPEED;
+			speedAndAngle.angle = STRAIGHTFORWARD;
 		}
 		else	//ansonsten dreht er sich maximal nach links und fährt rückwärts
 		{
-//			speedAndAngle.x = PARKINGSPEED;
-			speedAndAngle.x = 0;
-			speedAndAngle.y = LEFT_MAX;
+			speedAndAngle.speed = PARKINGSPEED;
+//			speedAndAngle.speed = 0;
+			speedAndAngle.angle = LEFT_MAX;
 		}
 	}
 
@@ -136,8 +137,8 @@ DriveIntoGap::twoInts DriveIntoGap::forward()
 	//Todo Geschwindigkeit variabel machen
 
 	twoInts speedAndAngle;
-	speedAndAngle.x = - PARKINGSPEED;
-	speedAndAngle.y = STRAIGHTFORWARD;
+	speedAndAngle.speed = - PARKINGSPEED;
+	speedAndAngle.angle = STRAIGHTFORWARD;
 
 	return speedAndAngle;
 }

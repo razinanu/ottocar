@@ -15,7 +15,7 @@ const int LOOP_RATE = 30;
 
 //ParkingConst
 const float BIGRANGE=99.0;
-const float PARALLELDISTANCE=0.4;
+const float PARALLELDISTANCE=0.17;
 
 //GapCalculatorConst
 const float MINDISTANCE = 0.05;
@@ -40,6 +40,6 @@ const int SEARCH_SPACE = 256;	//Wert, bis zu dem die Laserscans ausgewertet werd
 //DriveIntoGap
 const float SECUREDISTANCE_BACK = 0.35;
 const float SECUREDISTANCE_FRONT = 0.15;
-const int PARKINGSPEED = 4;
+const int PARKINGSPEED = 8;
 
 #endif /* PARK_H_ */

@@ -40,12 +40,15 @@ private:
 	bool left_turn;
 	bool straight_turn;
 
+	ros::Time lastMeasuredPointOfTime;
+
 	void subBackIR();
 
 	float minimalDistance;
 
 	float horizontalDistanceToObstacle;
 	float verticalDistanceToObstacle;
+	float rearWheelHorizontal;
 
 	//nan-Werte werden als -1 gespeichert
 	sensor_msgs::LaserScan laser;
@@ -53,6 +56,10 @@ private:
 	int findMinEdge(int);
 	int findMaxForHorizontal();
 	int findMaxForVertical();
+
+	//horizontaler Abstand der Hinterachse zum Hindernis in Meter
+	//orientation in rad
+	float calculateRearWheelHorizontal(float frontHorizontal, float orientation);
 };
 
 #endif /* PARKINGCONTROLLER_H_ */

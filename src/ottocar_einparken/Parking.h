@@ -35,6 +35,8 @@ private:
 	ros::Subscriber sensor_ir1_Subscriber;
 	ros::Subscriber sensor_ir2_Subscriber;
 
+
+
 public:
 	Parking();
 	virtual ~Parking();
@@ -55,6 +57,8 @@ public:
 	void ir2Values(const std_msgs::Float32 sensor);
 	float linearize(float sensor);
 
+	float intoGapAngle;
+	float intoGapSpeed;
 	float distanceBack;
 	float distanceSide;
 

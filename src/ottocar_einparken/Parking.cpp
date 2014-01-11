@@ -11,7 +11,10 @@ Parking::Parking() :
 		GapCalculator_(true), ParallelController_(true), PositionController_(
 				true), ParkingController_(false)
 {
-
+	intoGapAngle = 0;
+	intoGapSpeed = 0;
+	distanceBack = -1;
+	distanceSide = -1;
 }
 
 Parking::~Parking()
@@ -32,34 +35,34 @@ void Parking::scanValues(sensor_msgs::LaserScan laser)
 	}
 
 	//as long as the best Gap was found
-	if (GapCalculator_)
-	{
-		gapcal.LaserScanGapCal(laser);
-	}
-
-	if (ParallelController_)
-	{
-		parallel.laserScanParallel(laser);
-	}
-	//Whether the car is at correct Position to park.
-	//in case that car is at correct Position, PrkingController must be set to true
-	if (PositionController_)
-	{
-		position.LaserScanPosition(laser);
-	}
-	//PrkingController set to true, if the car is at correct position to park
-	//ParkingController_ = false;
+//	if (GapCalculator_)
+//	{
+//		gapcal.LaserScanGapCal(laser);
+//	}
+//
+//	if (ParallelController_)
+//	{
+//		parallel.laserScanParallel(laser);
+//	}
+//	//Whether the car is at correct Position to park.
+//	//in case that car is at correct Position, PrkingController must be set to true
+//	if (PositionController_)
+//	{
+//		position.LaserScanPosition(laser);
+//	}
+	//ParkingController set to true, if the car is at correct position to park
+	ParkingController_ = true;
 	if (ParkingController_)
 	{
 		float size = 60.0;
-		//parkControll.LaserScanParkControll(laser);
-		DriveIntoGap::twoInts twoInts = driveIntoGap.drive(laser, size);
-
+		DriveIntoGap::twoInts twoInts = driveIntoGap.drive(laser, size, distanceBack, distanceSide);
+		intoGapAngle = twoInts.angle;
+		intoGapSpeed = twoInts.speed;
 	}
 
 }
 
-float Parking::linearlize(float value)
+float Parking::linearize(float value)
 {
 	float error = 40.0;
 
@@ -85,13 +88,13 @@ float Parking::linearlize(float value)
 
 void Parking::ir1Values(std_msgs::Float32 sensor)
 {
-	this->distanceBack = linearlize(sensor.data);
+	this->distanceBack = linearize(sensor.data);
 //	ROS_INFO("[PAR]: IR1: (V,%f) and (D,%f)", sensor.data, distanceBack);
 }
 
 void Parking::ir2Values(const std_msgs::Float32 sensor)
 {
-	this->distanceSide = linearlize(sensor.data);
+	this->distanceSide = linearize(sensor.data);
 //	ROS_INFO("[PAR]: IR2: (V,%f) and (D,%f)", sensor.data, distanceSide);
 }
 
@@ -112,6 +115,7 @@ void Parking::init()
 int main(int argc, char** argv)
 {
 	ros::init(argc, argv, "parking");
+
 	Parking park;
 	try
 	{
@@ -167,9 +171,16 @@ int main(int argc, char** argv)
 			park.speed_pub.publish(data.speed);
 		}
 		//drive into the gap
-		else
+		else if(park.ParkingController_)
 		{
+			std_msgs::Int8 angle;
+			angle.data = park.intoGapAngle;
 
+			std_msgs::Int8 speed;
+			speed.data = park.intoGapSpeed;
+
+			park.angle_pub.publish(angle);
+			park.speed_pub.publish(speed);
 		}
 
 		ros::spinOnce();

@@ -19,8 +19,8 @@ public:
 
 	struct twoInts
 	{
-		int x;
-		int y;
+		int angle;
+		int speed;
 	};
 
 	DriveIntoGap();
