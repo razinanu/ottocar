@@ -12,7 +12,8 @@ int counter_punkt1 = -1;
 int counter_punkt2 = -1;
 //todo Puffer richtig vorfuellen
 float buffer_D[] =
-{ TARGET_DISTANCE, TARGET_DISTANCE, TARGET_DISTANCE, TARGET_DISTANCE, TARGET_DISTANCE };
+{ TARGET_DISTANCE, TARGET_DISTANCE, TARGET_DISTANCE, TARGET_DISTANCE,
+		TARGET_DISTANCE };
 float buffer_epsilon[] =
 { 0, 0, 0, 0, 0 };
 int bufferSize = 1;
@@ -41,47 +42,20 @@ void ParallelController::laserScanParallel(const sensor_msgs::LaserScan laser)
 	triangleData triangle;
 
 #if LASER_DATA == true
-	for (int i = 0; i < (255); i++)
+	for (int i = 0; i <= (SEARCH_SPACE); i++)
 	{
 		ROS_INFO(
 				"i: %d: %2.4f | %2.4f", i, laser.ranges[511 - i], ((TARGET_DISTANCE / cos(i * laser.angle_increment)) * TOLERANCE));
 	}
 #endif
 
-//	ROS_INFO("i: %d: %2.4f", 254, laser.ranges[511 - 254]);
-
-//	//pruefen, ob Bot neben dem Karton steht
-//	if (laser.ranges[laser.ranges.size() - 1] < TARGET_DISTANCE * TOLERANCE)
-//	{
-//		//ersten Sprung finden
-//		lastPoint = findEdge(laser, 0);
-//		if (lastPoint >= SEARCH_SPACE)
-//		{
-//			ROS_ERROR("[PLC]: Bot steht neben einem Karton; kein Sprung gefunden");
-//			return;
-//		}
-//
-//		//lokales Minimum finden
-//		firstPointFirstCarton = findMinimum(laser, 0, lastPoint);
-//		if (firstPointFirstCarton <= 0)
-//		{
-//			ROS_ERROR("[PLC]: Bot steht neben einem Karton, kein Minimum gefunden");
-//			return;
-//		}
-//	}
-//	else //Bot steht NICHT neben dem Karton
-//	{
-
-
 	//pruefen, ob vor dem Auto ein Hindernis steht (nicht elegant)
 	if (laser.ranges[laser.ranges.size() - (255 + 1)] < 0.3)
 	{
-//#if INFO == true
+#if INFO == true
 		if (!obstacleInFrontOfTheCar)
-		{
 			ROS_WARN("[PLC]: Hindernis erkannt");
-		}
-//#endif
+#endif
 		obstacleInFrontOfTheCar = true;
 	}
 	else
@@ -89,6 +63,7 @@ void ParallelController::laserScanParallel(const sensor_msgs::LaserScan laser)
 		obstacleInFrontOfTheCar = false;
 	}
 
+	//START
 
 //ersten gueltigen Wert finden
 	pointCartonStart = findCarton(laser, indexOfFirstMeasurement);
@@ -113,7 +88,6 @@ void ParallelController::laserScanParallel(const sensor_msgs::LaserScan laser)
 		ROS_ERROR("[PLC]: kein Minimum beim 1. Karton gefunden");
 		return;
 	}
-//	}
 
 //	triangle = calculateTriangle(laser, point_B, point_C);
 	triangle = calculateBetterTriangle(laser, firstPointFirstCarton, lastPoint);
@@ -126,23 +100,43 @@ void ParallelController::laserScanParallel(const sensor_msgs::LaserScan laser)
 		cartonCounter++;
 
 		//naechsten gueltigen Wert finden
-		pointCartonStart = findCarton(laser, lastPoint + 1);
-		if (pointCartonStart < 0)
+		if (findCarton(laser, lastPoint + 1) > 0)
 		{
-			ROS_ERROR("[PLC]: keinen %d. Karton gefunden", cartonCounter);
-			return; //todo sollte hier nicht abbrechen
+			pointCartonStart = findCarton(laser, lastPoint + 1);
+		}
+		else
+		{
+#if INFO == true
+			ROS_WARN("[PLC]: keinen %d. Karton gefunden", cartonCounter);
+#endif
+			break;
 		}
 
 		//naechsten Sprung finden
-		lastPoint = findEdge(laser, pointCartonStart);
+		if (findEdge(laser, pointCartonStart) > 0)
+		{
+			lastPoint = findEdge(laser, pointCartonStart);
+		}
+		else
+		{
+#if INFO == true
+			ROS_WARN("[PLC]: keinen Sprung beim %d. Karton gefunden", cartonCounter);
+#endif
+			break;
+		}
 
 		//minimum des naechsten Sprunges finden
-		firstPointLastCarton = findMinimum(laser, pointCartonStart, lastPoint);
-		if (firstPointLastCarton < 0)
+		if (findMinimum(laser, pointCartonStart, lastPoint) > 0)
 		{
-			ROS_ERROR(
-					"[PLC]: kein Minimum beim %d. Karton gefunden", cartonCounter);
-			return; //todo sollte hier nicht abbrechen
+			firstPointLastCarton = findMinimum(laser, pointCartonStart,
+							lastPoint);
+		}
+		else
+		{
+#if INFO == true
+			ROS_WARN("[PLC]: kein Minimum beim %d. Karton gefunden", cartonCounter);
+#endif
+			break;
 		}
 
 //		triangle = calculateTriangle(laser, point_B, point_C);
@@ -155,14 +149,24 @@ void ParallelController::laserScanParallel(const sensor_msgs::LaserScan laser)
 #endif
 	}
 
-	writeToBuffer(triangle.side_d, triangle.epsilon);
+	//wenn der Winkel groesser ist als spezifiziert, wert nicht in den buffer schreiben!
+	if (fabs(triangle.epsilon) < 0.349)
+	{
+		writeToBuffer(triangle.side_d, triangle.epsilon);
+	}
+	else
+	{
+#if INFO == true
+		ROS_WARN("[PLC]: falsche Berechnung: %2.4f | %2.4f", triangle.side_d, triangle.epsilon);
+#endif
+	}
 
 #if INFO == true
-	ROS_INFO("[PLC]: point_b: %d", firstPointFirstCarton);
-	ROS_INFO("[PLC]: point_c: %d", lastPoint);
+	ROS_INFO("[PLC]: firstPoint: %d", firstPointFirstCarton);
+	ROS_INFO("[PLC]: lastPoint: %d", lastPoint);
 	ROS_INFO("[PLC]: side_d: %2.8f", triangle.side_d);
-	ROS_WARN("[PLC]: side_d Median: %2.8f", getMedian().distance);
-	ROS_WARN(
+	ROS_INFO("[PLC]: side_d Median: %2.8f", getMedian().distance);
+	ROS_INFO(
 			"[PLC]: epsilon Median: %2.8f (%2.2f Grad)", getMedian().angle, getMedian().angle * 180 / M_PI);
 	ROS_INFO("[PLC]: -------------------------------------- ");
 #endif
@@ -238,16 +242,27 @@ ParallelController::triangleData ParallelController::calculateBetterTriangle(
 
 	if (lastPoint <= firstPoint)
 	{
-		ROS_ERROR("[PLC]: calculateBetterTriangle falsch aufgerufen");
+		ROS_ERROR(
+				"[PLC]: calculateBetterTriangle falsch aufgerufen: %d %d", firstPoint, lastPoint);
+		result.side_d = TARGET_DISTANCE;
+
+		#if LASER_DATA == false and INFO == true
+		for (int i = 0; i <= (SEARCH_SPACE); i++)
+		{
+			ROS_INFO(
+					"i: %d: %2.4f | %2.4f", i, laser.ranges[511 - i], ((TARGET_DISTANCE / cos(i * laser.angle_increment)) * TOLERANCE));
+		}
+#endif
+
 		return result;
 	}
 
-//	help = calculateRegressionLine(firstPoint, lastPoint, firstPoint, lastPoint, laser);
-//	result.side_b = help.lastPoint;
-//	result.side_c = help.firstPoint;
+	help = calculateRegressionLine(firstPoint, lastPoint, firstPoint, lastPoint, laser);
+	result.side_b = help.lastPoint;
+	result.side_c = help.firstPoint;
 
-	result.side_b = laser.ranges[laser.ranges.size() - (lastPoint + 1)];
-	result.side_c = laser.ranges[laser.ranges.size() - (firstPoint + 1)];
+//	result.side_b = laser.ranges[laser.ranges.size() - (lastPoint + 1)];
+//	result.side_c = laser.ranges[laser.ranges.size() - (firstPoint + 1)];
 
 	/* a = sqrt(b² + c² -2bc * cos alpha) */
 	result.side_a = sqrt(
@@ -302,14 +317,25 @@ ParallelController::triangleData ParallelController::calculateBetterTriangle2(
 
 	if (lastPoint <= firstPoint)
 	{
-		ROS_ERROR("[PLC]: calculateBetterTriangle2 falsch aufgerufen");
+		ROS_ERROR(
+				"[PLC]: calculateBetterTriangle2 falsch aufgerufen: %d %d", firstPoint, lastPoint);
+		result.side_d = TARGET_DISTANCE;
+
+#if LASER_DATA == false and INFO == true
+		for (int i = 0; i <= (SEARCH_SPACE); i++)
+		{
+			ROS_INFO(
+					"i: %d: %2.4f | %2.4f", i, laser.ranges[511 - i], ((TARGET_DISTANCE / cos(i * laser.angle_increment)) * TOLERANCE));
+		}
+#endif
+
 		return result;
 	}
 
-//	result.side_b = calculateRegressionLine(firstPointLastCarton, lastPoint, lastPoint, lastPoint, laser).lastPoint;
+	result.side_b = calculateRegressionLine(firstPointLastCarton, lastPoint, lastPoint, lastPoint, laser).lastPoint;
 	result.side_c = side_C;
 
-	result.side_b = laser.ranges[laser.ranges.size() - (lastPoint + 1)];
+//	result.side_b = laser.ranges[laser.ranges.size() - (lastPoint + 1)];
 
 	/* a = sqrt(b² + c² -2bc * cos alpha) */
 	result.side_a = sqrt(
@@ -374,6 +400,13 @@ ParallelController::triangleSide ParallelController::calculateRegressionLine(
 		ROS_INFO("[PLC]: start: %d", start);
 		ROS_INFO("[PLC]: end: %d", end);
 		ROS_ERROR("[PLC]: calculateRegressionLine falsch aufgerufen");
+#if LASER_DATA == false and INFO == true
+	for (int i = 0; i <= (SEARCH_SPACE); i++)
+	{
+		ROS_INFO(
+				"i: %d: %2.4f | %2.4f", i, laser.ranges[511 - i], ((TARGET_DISTANCE / cos(i * laser.angle_increment)) * TOLERANCE));
+	}
+#endif
 		return result;
 	}
 
@@ -384,27 +417,27 @@ ParallelController::triangleSide ParallelController::calculateRegressionLine(
 
 	//sum (xi * yi)
 	sumxiyi = 0;
-	for (int i = start; i < end; i++)
+	for (int i = start; i <= end; i++)
 	{
 		sumxiyi += i * laser.ranges[laser.ranges.size() - (i + 1)];
 	}
 
 	//sum (xi), sum (yi)
 	sumxi = 0;
-	for (int i = start; i < end; i++)
+	for (int i = start; i <= end; i++)
 	{
 		sumxi += i;
 	}
 
 	sumyi = 0;
-	for (int i = start; i < end; i++)
+	for (int i = start; i <= end; i++)
 	{
 		sumyi += laser.ranges[laser.ranges.size() - (i + 1)];
 	}
 
 	//sum (xi²)
 	sumxi2 = 0;
-	for (int i = start; i < end; i++)
+	for (int i = start; i <= end; i++)
 	{
 		sumxi2 += i * i;
 	}
@@ -432,7 +465,9 @@ ParallelController::triangleSide ParallelController::calculateRegressionLine(
 //	ROS_INFO("[PLC]: a: %2.8f", a);
 //	ROS_INFO("[PLC]: b: %2.8f", b);
 	ROS_INFO("[PLC]: result.firstPoint: %2.8f", result.firstPoint);
+	ROS_INFO("[PLC]: laser.firstPoint: %2.8f", laser.ranges[laser.ranges.size() - (firstPoint + 1)]);
 	ROS_INFO("[PLC]: result.lastPoint: %2.8f", result.lastPoint);
+	ROS_INFO("[PLC]: laser.lastPoint: %2.8f", laser.ranges[laser.ranges.size() - (lastPoint + 1)]);
 #endif
 
 	return result;
@@ -446,20 +481,34 @@ int ParallelController::findEdge(const sensor_msgs::LaserScan &laser, int index)
 		return -1;
 	}
 
-	while ((laser.ranges[laser.ranges.size() - (index + 2)]
-			< laser.ranges[laser.ranges.size() - (index + 1)] * TOLERANCE)
-			&& (laser.ranges[laser.ranges.size() - (index + 1)] < MAX_RANGE)
-			&& (index < SEARCH_SPACE))
+	for (int i = index; i < SEARCH_SPACE; i++)
 	{
-		index++;
+		//todo sinnvolles Abbruchkriterium?
+		//der naechste Wert ist groesser perfekter Wert * Tolleranz
+	//		if (laser.ranges[laser.ranges.size() - (i + 2)] > MAX_RANGE
+	//				&& laser.ranges[laser.ranges.size() - (i + 1)] < MAX_RANGE)
+	//		{
+	//			ROS_INFO("[findEdge]: naechster Wert ist groesser als perfekter Wert * Tolleranz: %d", i);
+	//			return i;
+	//		}
+
+		//der naechste Wert ist min. doppelt so gross wie der aktuelle Wert
+		if (((laser.ranges[laser.ranges.size() - (i + 1)] * 1.5)
+				< laser.ranges[laser.ranges.size() - (i + 2)]))
+		{
+			return i;
+		}
 	}
 
-	if (index > SEARCH_SPACE)
-	{
-		return -1;
-	}
+//#if INFO == true and LASER_DATA == false
+//	ROS_WARN("kein Sprung gefunden: %d", index);
+//	for (int i = index; i < SEARCH_SPACE; i++)
+//	{
+//		ROS_INFO("%d | %2.8f | %2.8f", i, laser.ranges[laser.ranges.size() - (i + 1)], laser.ranges[laser.ranges.size() - (i + 2)]);
+//	}
+//#endif
 
-	return index;
+	return -1;
 }
 
 int ParallelController::findCarton(const sensor_msgs::LaserScan &laser,
@@ -476,13 +525,13 @@ int ParallelController::findCarton(const sensor_msgs::LaserScan &laser,
 		/*
 		 * Karton gefunden, wenn:
 		 * - Wert < perfekter Wert * Tolleranz &&
-		 * - perfekter Wert < maximaler Wert &&
+		 * - perfekter Wert * Tolleranz < maximaler Wert &&
 		 * - Wert > minimaler Wert
 		 */
 		if ((laser.ranges[laser.ranges.size() - (i + 1)]
 				< (TARGET_DISTANCE / cos(i * laser.angle_increment)) * TOLERANCE)
-				&& ((TARGET_DISTANCE / cos(i * laser.angle_increment))
-						* TOLERANCE) < MAX_RANGE
+				&& ((TARGET_DISTANCE / cos(i * laser.angle_increment)
+						* TOLERANCE) < MAX_RANGE)
 				&& (laser.ranges[laser.ranges.size() - (i + 1)] > MIN_RANGE))
 		{
 			return i;
@@ -498,9 +547,10 @@ int ParallelController::findMinimum(const sensor_msgs::LaserScan &laser,
 	float minimum;
 	int indexMinimum;
 
-	if (firstPoint < 0)
+	if ((firstPoint < 0) || (lastPoint < firstPoint))
 	{
 		ROS_ERROR("[PLC]: findMinimum falsch aufgerufen; %d", firstPoint);
+		ROS_INFO("lastPoint: %d | firstPoint: %d", lastPoint, firstPoint);
 		return -1;
 	}
 
@@ -519,7 +569,7 @@ int ParallelController::findMinimum(const sensor_msgs::LaserScan &laser,
 
 	if (indexMinimum < 0)
 	{
-		ROS_ERROR("[PLC]: Fehler in findMinimum");
+		ROS_ERROR("[PLC]: Fehler in findMinimum: %d %d", firstPoint, lastPoint);
 		return -1;
 	}
 

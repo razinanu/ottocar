@@ -11,6 +11,7 @@ Parking::Parking() :
 		GapCalculator_(true), ParallelController_(true), PositionController_(
 				true), ParkingController_(false)
 {
+
 }
 
 Parking::~Parking()
@@ -46,16 +47,19 @@ void Parking::scanValues(sensor_msgs::LaserScan laser)
 	{
 		position.LaserScanPosition(laser);
 	}
-	//ParkingController set to true, if the car is at correct position to park
+	//PrkingController set to true, if the car is at correct position to park
+	//ParkingController_ = false;
 	if (ParkingController_)
 	{
-		driveIntoGap.drive(laser, 0.9, distanceBack, distanceSide);			//---------------> delete magic numbers!
+		float size = 60.0;
+		//parkControll.LaserScanParkControll(laser);
+		DriveIntoGap::twoInts twoInts = driveIntoGap.drive(laser, size);
 
 	}
 
 }
 
-float Parking::linearize(float value)
+float Parking::linearlize(float value)
 {
 	float error = 40.0;
 
@@ -74,21 +78,21 @@ float Parking::linearize(float value)
 	}
 	else
 	{
-		ROS_INFO("[PAR]: linearlize of %f", value);
+//		ROS_INFO("[PAR]: linearlize of %f", value);
 		return error;
 	}
 }
 
 void Parking::ir1Values(std_msgs::Float32 sensor)
 {
-	this->distanceBack = linearize(sensor.data);
-	ROS_INFO("[PAR]: IR1: (V,%f) and (D,%f)", sensor.data, distanceBack);
+	this->distanceBack = linearlize(sensor.data);
+//	ROS_INFO("[PAR]: IR1: (V,%f) and (D,%f)", sensor.data, distanceBack);
 }
 
 void Parking::ir2Values(const std_msgs::Float32 sensor)
 {
-	this->distanceSide = linearize(sensor.data);
-	ROS_INFO("[PAR]: IR2: (V,%f) and (D,%f)", sensor.data, distanceSide);
+	this->distanceSide = linearlize(sensor.data);
+//	ROS_INFO("[PAR]: IR2: (V,%f) and (D,%f)", sensor.data, distanceSide);
 }
 
 void Parking::init()
@@ -122,11 +126,48 @@ int main(int argc, char** argv)
 		return -1;
 	}
 
-	ros::Rate loop_rate(LOOP_RATE);
+	MoveToGap::driveData data;
+	MoveToGap driver;
 
+	data.angle.data = 0;
+	park.angle_pub.publish(data.angle);
+	ros::Duration(0.4).sleep();
+
+	data.angle.data = -90;
+	park.angle_pub.publish(data.angle);
+	ros::Duration(0.4).sleep();
+
+	data.angle.data = 0;
+	park.angle_pub.publish(data.angle);
+	ros::Duration(0.4).sleep();
+
+	ROS_INFO("[PAR]: Parking gestartet");
+
+	ros::Rate loop_rate(LOOP_RATE);
 	while (ros::ok)
 	{
-		if(park.parallel.driveEnable())
+		//move to the gap
+		if (!park.ParkingController_)
+		{
+			//
+			if (park.parallel.driveEnable())
+			{
+				data = driver.moveToGap(park.distanceSide);
+
+				if (data.speed.data == 0)
+				{
+					park.ParkingController_ = true;
+				}
+			}
+			else
+			{
+				data.speed.data = 0;
+			}
+			park.angle_pub.publish(data.angle);
+			park.speed_pub.publish(data.speed);
+		}
+		//drive into the gap
+		else
 		{
 
 		}
@@ -135,5 +176,6 @@ int main(int argc, char** argv)
 		loop_rate.sleep();
 	}
 
+	ROS_WARN("[PAR]: Parking beendet");
 	return 0;
 }
