@@ -10,36 +10,54 @@
 MoveToGap::MoveToGap()
 {
 	cartonSeen = false;
-	begin = ros::Time::now()	- ros::Duration(2);
+	distanceGot = false;
+	gapBegin = ros::Time::now() - ros::Duration(2);
 }
 
 MoveToGap::~MoveToGap()
 {
 }
 
-MoveToGap::driveData MoveToGap::moveToGap(float dataIR)
+MoveToGap::driveData MoveToGap::moveToGap(float dataIR, float distanceToGap)
 {
 	driveData result;
 
 	result.angle.data = -21;
 	result.speed.data = -8;
 
-	//Zeit nehmen, wenn Karton gesehen
-	if (dataIR < 12 && !cartonSeen)
+	if (distanceToGap > 0)
 	{
-		begin = ros::Time::now();
-		cartonSeen = true;
-		ROS_INFO("[MTG]: Karton gesehen");
-	}
-	else if (!cartonSeen)
-	{
-		begin = ros::Time::now();
-	}
+		if (distanceToGap > 0 && !distanceGot)
+		{
+			distanceFound = ros::Time::now();
+			distanceGot = true;
+			timeToDrive = (distanceToGap / 0.4);
+		}
 
-	//verzögert anhalten
-	if (begin	< (ros::Time::now()	- ros::Duration(0.5)))
-	{
-		result.speed.data = 0;
+		if ((distanceFound + ros::Duration(timeToDrive)) > ros::Time::now())
+		{
+
+		}
+		else
+		{
+			//Zeit nehmen, wenn Karton gesehen
+			if (dataIR < 12 && !cartonSeen)
+			{
+				gapBegin = ros::Time::now();
+				cartonSeen = true;
+				ROS_INFO("[MTG]: Karton gesehen");
+			}
+			else if (!cartonSeen)
+			{
+				gapBegin = ros::Time::now();
+			}
+
+			//verzögert anhalten
+			if (gapBegin < (ros::Time::now() - ros::Duration(0.5)))
+			{
+				result.speed.data = 0;
+			}
+		}
 	}
 
 	return result;
