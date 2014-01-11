@@ -8,12 +8,13 @@
 #ifndef DRIVEINTOGAP_H_
 #define DRIVEINTOGAP_H_
 
-
 #include "ros/ros.h"
 #include "sensor_msgs/LaserScan.h"
 #include "ParkingController.h"
+#include "std_msgs/Float32.h"
 
-class DriveIntoGap {
+class DriveIntoGap
+{
 public:
 
 	struct twoInts
@@ -75,8 +76,6 @@ private:
 	//###################################################
 	//temporär, bis sinnvolle Methoden von Simone kommen:
 	//###################################################
-
-
 
 };
 
