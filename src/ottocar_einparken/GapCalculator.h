@@ -21,7 +21,7 @@ private:
 	float distanceHorizontal, baseDistance, baseVDistance, secondHDistance,
 				secondVDistance, space, baseHDistance,angle,minVDistance,HDistance,gapDistance;
 	void  minPointFinder(const sensor_msgs::LaserScan laser);
-	float getGapDistance();
+
 
 	double Pi;
 	bool writeGapFined;
@@ -32,7 +32,7 @@ public:
 	GapCalculator();
 	virtual ~GapCalculator();
 	bool LaserScanGapCal(const sensor_msgs::LaserScan laser);
-
+	float getGapDistance();
 
 };
 
