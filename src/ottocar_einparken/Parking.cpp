@@ -52,7 +52,7 @@ void Parking::scanValues(sensor_msgs::LaserScan laser)
 	if (ParkingController_)
 	{
 		float size = 60.0;
-		parkControll.LaserScanParkControll(laser);
+//		parkControll.LaserScanParkControll(laser);
 		driveIntoGap.drive(laser, size);
 
 	}
@@ -68,31 +68,26 @@ float Parking::linearlize(float value)
 	{
 		return (1 / (-1.45 / 6)) * value + (432 / 29);
 	}
-	else if (value > 0.8)
+	else if (value > 0.8 && value < 1.25)
 	{
 		return (1 / (-1.45 / 6)) * value + (432 / 29);
 	}
-	else if (value > 0.3)
-	{
-		return (1 / (-0.075)) * value + (80 / 3);
-	}
 	else
 	{
-		ROS_INFO("[PAR]: linearlize of %f", value);
-		return error;
+		return (1 / (-0.075)) * value + (80 / 3);
 	}
 }
 
 void Parking::ir1Values(std_msgs::Float32 sensor)
 {
 	this->distanceBack = linearlize(sensor.data);
-	ROS_INFO("[PAR]: IR1: (V,%f) and (D,%f)", sensor.data, distanceBack);
+	ROS_INFO("[PAR]: IR1: (V-%f) and (D-%f)", sensor.data, distanceBack);
 }
 
 void Parking::ir2Values(const std_msgs::Float32 sensor)
 {
 	this->distanceSide = linearlize(sensor.data);
-	ROS_INFO("[PAR]: IR2: (V,%f) and (D,%f)", sensor.data, distanceSide);
+	ROS_INFO("[PAR]: IR2: (V-%f) and (D-%f)", sensor.data, distanceSide);
 }
 
 void Parking::init()
