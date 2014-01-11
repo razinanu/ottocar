@@ -9,36 +9,38 @@
 
 MoveToGap::MoveToGap()
 {
+	cartonSeen = false;
+	begin = ros::Time::now()	- ros::Duration(2);
 }
 
 MoveToGap::~MoveToGap()
 {
 }
 
-MoveToGap::driveData MoveToGap::moveToGap(ParallelController::orientationData data)
+MoveToGap::driveData MoveToGap::moveToGap(float dataIR)
 {
 	driveData result;
-	result.speed.data = 0;
 
-	int angleValue = (TARGET_DISTANCE - data.distance) * 500 * (-1) * 1.2;
-	if (angleValue < 120)
+	result.angle.data = -21;
+	result.speed.data = -8;
+
+	//Zeit nehmen, wenn Karton gesehen
+	if (dataIR < 12 && !cartonSeen)
 	{
-//		result.angle.data = angleValue;
-		result.speed.data = -8;
-
-		result.angle.data = -21;
-//		result.speed.data = 0;
-
-		ROS_INFO("[MTG]: Lenkung: %d | %2.4f", angleValue, data.distance);
+		begin = ros::Time::now();
+		cartonSeen = true;
+		ROS_INFO("[MTG]: Karton gesehen");
 	}
-	else
+	else if (!cartonSeen)
 	{
-		result.angle.data = -21;
-		result.speed.data = -8;
-		ROS_WARN("[MTG]: Lenkung: %d | %2.4f", angleValue, data.distance);
+		begin = ros::Time::now();
 	}
 
-
+	//verzögert anhalten
+	if (begin	< (ros::Time::now()	- ros::Duration(0.5)))
+	{
+		result.speed.data = 0;
+	}
 
 	return result;
 }
