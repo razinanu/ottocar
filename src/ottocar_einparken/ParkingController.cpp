@@ -86,56 +86,54 @@ int ParkingController::findMaxForVertical()
 		if (laser.ranges[i] < 2 * laser.ranges[i - 1])
 		{
 			indexEdge = i;
-			return indexEdge;
-
 		}
 	}
 	return indexEdge;
 }
 
-void ParkingController::turnDistance(const sensor_msgs::LaserScan laser)
+float ParkingController::computeTriangulationForDistance(float rayAtMinEdge,
+		float rayAccordingToEdge, float angleGamma)
 {
+	// side is on the obstacle
+	// c = sqrt(a²+b²-2ab*cos(gamma));
+	float sideOnObstacle = sqrt(
+			(rayAtMinEdge * rayAtMinEdge)
+					+ (rayAccordingToEdge * rayAccordingToEdge)
+					- (2 * rayAtMinEdge * rayAccordingToEdge)
+							* cos(angleGamma));
+//	ROS_INFO("[PAC]: sideOnObstacle of Triangle: %f", sideOnObstacle);
+
+	// alpha = acos(b² + c² -a² / 2*b*c);
+	float alphaOnObstacle = acos(
+			((rayAtMinEdge * rayAtMinEdge) + (sideOnObstacle * sideOnObstacle)
+					- (rayAccordingToEdge * rayAccordingToEdge))
+					/ (2 * rayAtMinEdge * sideOnObstacle));
+
+	ROS_WARN("[PAC]: ---Triangle Complement - cannot see ---");
+	float alphaComplement = M_PI - alphaOnObstacle; // 180° = M_PI
+	// falls der Winkel gamma benoetigt
+	// gamma => zwischen horizont und erstem Strahl
+	float gammaComplement = M_PI - (M_PI / 2) - alphaComplement; // 180 - 90 -alphaComplement
+
+	return alphaComplement;
+}
+
+// erste haelfte des parkvorgangs berechnen
+void ParkingController::turnOver()
+{
+
 	float angle = laser.angle_min;
 	int indexMaxEdge = this->findMaxForHorizontal();
 	int indexMinEdge = this->findMinEdge(indexMaxEdge);
 
 	float rayAtMinEdge = laser.ranges[indexMinEdge];
 	float rayAccordingToEdge = laser.ranges[indexMaxEdge];
-	float gamma = laser.angle_increment * (rayAccordingToEdge - rayAtMinEdge);
+	float angleGamma = laser.angle_increment * (indexMaxEdge - indexMinEdge);
+//	ROS_WARN("[PAC]: (minEdge,maxEdge)-(%i,%i)-(%f,%f): %2.8f", indexMinEdge,
+//			indexMaxEdge, rayAtMinEdge, rayAccordingToEdge, angleGamma);
 
-	ROS_WARN("[PAC]: (minEdge,maxEdge)-(%i,%i)-(%f,%f): %2.8f", indexMinEdge,
-			indexMaxEdge, rayAtMinEdge, rayAccordingToEdge, gamma);
-//	if (rayAccordingToEdge > rayAtMinEdge * 2)
-//	{
-//		return;
-//	}
-	// TODO: rechung beim schraegstehen testen --> ist falsch
-//	[ WARN] [1387057245.476250513]: [PAC]: (minEdge,maxEdge)-(511,478)-(0.177000,0.218000): 0.00025157
-//	[ INFO] [1387057245.476900005]: [PAC]: sideC of Triangle: 0.041000
-//	[ INFO] [1387057245.477247833]: [PAC]: ---Triangle Complement - cannot see ---
-//	[ INFO] [1387057245.477533480]: [PAC]: distances(h,v) - (0.000293, 0.177000)
-//	[ INFO] [1387057245.477710817]: [PAC]: left - vertical Distance is 0.177000
-
-	// sideC is on the obstacle
-	// c = sqrt(a²+b²-2ab*cos(gamma));
-
-	float sideC = sqrt(
-			(rayAtMinEdge * rayAtMinEdge)
-					+ (rayAccordingToEdge * rayAccordingToEdge)
-					- (2 * rayAtMinEdge * rayAccordingToEdge) * cos(gamma));
-	ROS_INFO("[PAC]: sideC of Triangle: %f", sideC);
-
-	// alpha = acos(b² + c² -a² / 2*b*c);
-	float alphaOnObstacle = acos(
-			((rayAtMinEdge * rayAtMinEdge) + (sideC * sideC)
-					- (rayAccordingToEdge * rayAccordingToEdge))
-					/ (2 * rayAtMinEdge * sideC));
-
-	ROS_INFO("[PAC]: ---Triangle Complement - cannot see ---");
-	float alphaComplement = M_PI - alphaOnObstacle; // 180° = M_PI
-	// falls der Winkel gamma benoetigt
-	// gamma => ziwschen horizont und erstem Strahl
-	float gammaComplement = M_PI - (M_PI / 2) - alphaComplement; // 180 - 90 -alphaComplement
+	float alphaComplement = this->computeTriangulationForDistance(rayAtMinEdge,
+			rayAccordingToEdge, angleGamma);
 
 	horizontalDistanceToObstacle = sin(alphaComplement) * rayAtMinEdge;
 	verticalDistanceToObstacle = cos(alphaComplement) * rayAtMinEdge;
@@ -148,33 +146,11 @@ void ParkingController::LaserScanParkControll(
 {
 	this->laser = laser;
 	minimalDistance = -1;
+	this->turnOver();
 
-	this->turnDistance(laser);
-
-	// Rechtskurve
-	if (right_turn && horizontalDistanceToObstacle < RIGHTTURN
-			&& horizontalDistanceToObstacle > PARALLELDISTANCE)
+	if (horizontalDistanceToObstacle < RIGHTTURN)
 	{
-		ROS_INFO("[PAC]: right - horizontal Distance is %f",
-				horizontalDistanceToObstacle);
-		right_turn = true;
-	}
-	else
-	{
-		right_turn = false; // Linkskurve beginnen
-		left_turn = true;
-	}
-
-	// Linkskurve
-	if (left_turn && verticalDistanceToObstacle < LEFTTURN)
-	{
-		ROS_INFO("[PAC]: left - vertical Distance is %f",
-				verticalDistanceToObstacle);
-	}
-	else
-	{
-		left_turn = false;
-		straight_turn = true;
+		right_turn = false;
 	}
 
 	if (straight_turn && verticalDistanceToObstacle < SECUREDISTANCE_FRONT
@@ -183,12 +159,52 @@ void ParkingController::LaserScanParkControll(
 		ROS_INFO("[PaCo]: straight distance is (h,v) - (%f, %f)",
 				horizontalDistanceToObstacle, verticalDistanceToObstacle);
 	}
-	else
-	{
-		straight_turn = false;
-	}
 
-	// TODO Parken nachziehen
+}
+
+float computeParking(float rayEdge, float rayAccordingToEdge, float angle)
+{
+	// side is on the obstacle
+	// c = sqrt(a²+b²-2ab*cos(gamma));
+	float sideOnObstacle = sqrt(
+			(rayEdge * rayEdge) + (rayAccordingToEdge * rayAccordingToEdge)
+					- (2 * rayEdge * rayAccordingToEdge) * cos(angle));
+
+	// alpha = acos(a² + b² -c² / 2*a*b);
+	float angleOnObstacle = acos(
+			((sideOnObstacle * sideOnObstacle) + (rayEdge * rayEdge)
+					- (rayAccordingToEdge * rayAccordingToEdge))
+					/ (2 * sideOnObstacle * rayEdge));
+
+	ROS_WARN("[PAC]: ---Triangle Complement - cannot see ---");
+	float angleBeta = M_PI - angle - angleOnObstacle; // 180° = M_PI
+	float distanceToFront = sin(angleBeta) * rayAccordingToEdge;
+	float distanceToStreet = cos(angleOnObstacle) * rayEdge;
+	ROS_INFO("[PAC]: distance to street", distanceToStreet);
+
+	return distanceToStreet;
+}
+
+float ParkingController::getDistanceToStreet()
+{
+	float distanceToStreet = 0.0;
+
+	float angle = this->laser.angle_min;
+	int indexMaxEdge = this->findMaxForVertical();
+
+	float rayEdge = laser.ranges[indexMaxEdge];
+	float rayAccordingToEdge = getMinimalDistance();
+	float angleGamma = laser.angle_increment * (rayAccordingToEdge - rayEdge);
+
+	ROS_INFO("[PAC]: --- Compute distance to street ---");
+	ROS_WARN("[PAC]: %i-(%f,%f): %2.8f", indexMaxEdge, rayEdge,
+			rayAccordingToEdge, angleGamma);
+
+	distanceToStreet = this->computeTriangulationForDistance(rayEdge,
+			rayAccordingToEdge, angleGamma);
+
+	ROS_INFO("[PAC]: distances is %f", distanceToStreet);
+	return distanceToStreet;
 }
 
 float ParkingController::getFrontDistance()

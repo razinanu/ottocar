@@ -28,7 +28,6 @@ public:
 	//is the car at the front half of the gap?
 	bool rightTurn();
 	bool stopTurn();
-	void turnDistance(const sensor_msgs::LaserScan laser);
 
 private:
 	const float RIGHTTURN;
@@ -49,6 +48,11 @@ private:
 	int findMinEdge(int);
 	int findMaxForHorizontal();
 	int findMaxForVertical();
+
+	float getDistanceToStreet();
+	float computeTriangulationForDistance(float rayAtMinEdge,
+			float rayAccordingToEdge, float angleGamma);
+	void turnOver();
 };
 
 #endif /* PARKINGCONTROLLER_H_ */
