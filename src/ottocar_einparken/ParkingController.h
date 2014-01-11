@@ -12,6 +12,7 @@
 #include "std_msgs/String.h"
 #include "sensor_msgs/LaserScan.h"
 #include "ConstPark.h"
+#include "std_msgs/Float32.h"
 
 class ParkingController
 {
@@ -22,11 +23,6 @@ public:
 
 	//distance to the front wall
 	float getFrontDistance();
-
-	//distance to the back wall
-	float getBackDistance();
-
-	//search for the minimal distance of your scanranges and return it
 	float getMinimalDistance();
 
 	//is the car at the front half of the gap?

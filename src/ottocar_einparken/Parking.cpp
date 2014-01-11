@@ -57,9 +57,40 @@ void Parking::scanValues(sensor_msgs::LaserScan laser)
 
 }
 
-void Parking::getIRData(std_msgs::Float32 infrared)
+float Parking::linearlize(float value)
 {
-	currentInfraredValue = infrared.data;
+	float error = 40.0;
+
+// drei geraden zur annaeherung an die funktion
+	if (value > 1.25 && value < 4.0)
+	{
+		return (1 / (-1.45 / 6)) * value + (432 / 29);
+	}
+	else if (value > 0.8)
+	{
+		return (1 / (-1.45 / 6)) * value + (432 / 29);
+	}
+	else if (value > 0.3)
+	{
+		return (1 / (-0.075)) * value + (80 / 3);
+	}
+	else
+	{
+		ROS_INFO("[PAR]: linearlize of %f", value);
+		return error;
+	}
+}
+
+void Parking::ir1Values(std_msgs::Float32 sensor)
+{
+	this->distanceBack = linearlize(sensor.data);
+	ROS_INFO("[PAR]: IR1: (V,%f) and (D,%f)", sensor.data, distanceBack);
+}
+
+void Parking::ir2Values(const std_msgs::Float32 sensor)
+{
+	this->distanceSide = linearlize(sensor.data);
+	ROS_INFO("[PAR]: IR2: (V,%f) and (D,%f)", sensor.data, distanceSide);
 }
 
 void Parking::init()
@@ -68,7 +99,10 @@ void Parking::init()
 	speed_pub = parkingNode.advertise<std_msgs::Int8>("speed_cmd", 1);
 	hokuyoSubscriber = parkingNode.subscribe("/scan", 1, &Parking::scanValues,
 			this);
-	backIRSubscriber = parkingNode.subscribe("/sensor_IR1", 1, &Parking::getIRData, this);
+	sensor_ir1_Subscriber = parkingNode.subscribe("/sensor_IR1", 1,
+			&Parking::ir1Values, this);
+	sensor_ir2_Subscriber = parkingNode.subscribe("/sensor_IR2", 1,
+			&Parking::ir2Values, this);
 
 	ros::Duration(1).sleep();
 }

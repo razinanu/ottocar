@@ -3,6 +3,8 @@
  *
  *  Created on: Dec 7, 2013
  *      Author: Simone Bexten
+ *      export ROS_MASTER_URI=http://ottocar.local:11311/
+ *
  */
 
 #include "ParkingController.h"
@@ -38,7 +40,6 @@ int ParkingController::findMinEdge(int indexMaxEdge)
 	int indexEdge = 0;
 	float min = -1;
 
-//	for (int i = 0; i < this->laser.ranges.size(); i++)
 	for (int i = indexMaxEdge; i < this->laser.ranges.size(); i++)
 	{
 		if (min > laser.ranges[i] || min == -1)
@@ -47,7 +48,6 @@ int ParkingController::findMinEdge(int indexMaxEdge)
 			indexEdge = i;
 		}
 	}
-	return 511;
 	return indexEdge;
 }
 
@@ -69,7 +69,6 @@ int ParkingController::findMaxForHorizontal()
 			if (laser.ranges[i] < (laser.ranges[i - 1] / 2))
 			{
 				indexEdge = i;
-//				return indexEdge;
 			}
 		}
 	}
@@ -192,7 +191,7 @@ void ParkingController::LaserScanParkControll(
 	// TODO Parken nachziehen
 }
 
-float ParkingController::getBackDistance()
+float ParkingController::getFrontDistance()
 {
 	return 0;
 }
