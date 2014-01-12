@@ -19,7 +19,8 @@ const float PARALLELDISTANCE=0.17;
 
 //GapCalculatorConst
 const float MINDISTANCE = 0.1;
-const float FIRSTDISTANCE = 0.3;
+const float FIRSTDISTANCE = 0.2;
+const float BESTGAPLENGTH=0.7;
 
 //Lenkwerte
 const int STRAIGHTFORWARD = 0;

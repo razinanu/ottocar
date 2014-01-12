@@ -11,21 +11,22 @@
 #include "std_msgs/String.h"
 #include "sensor_msgs/LaserScan.h"
 using namespace std;
-enum laserState {
-	start, calculateBaseRange, calculateMaxPoint, calculateMinPoint,followGap, end
+enum laserState
+{
+	start,
+	calculateBaseRange,
+	calculateMaxPoint,
+	calculateMinPoint,
+	end
 };
 class GapCalculator
 {
 private:
 
 	float distanceHorizontal, baseDistance, baseVDistance, secondHDistance,
-				secondVDistance, space, baseHDistance,angle,minVDistance,HDistance,gapDistance;
-	void  minPointFinder(const sensor_msgs::LaserScan laser);
-
-
+			secondVDistance, space, baseHDistance, angle, minVDistance,
+			HDistance, gapDistance;
 	double Pi;
-	bool writeGapFined;
-	int c ;
 
 
 public:
