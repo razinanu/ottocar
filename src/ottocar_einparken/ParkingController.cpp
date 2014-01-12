@@ -10,7 +10,7 @@
 #include "ParkingController.h"
 
 ParkingController::ParkingController() :
-		RIGHTTURN(0.18), LEFTTURN(0.28), TOFRONT(0.13)
+RIGHTTURN(0.18), LEFTTURN(0.28), TOFRONT(0.13)
 {
 	right_turn = true;
 	left_turn = false;
@@ -43,7 +43,7 @@ int ParkingController::findMinEdge(int indexMaxEdge)
 
 	for (int i = indexMaxEdge; i < this->laser.ranges.size(); i++)
 	{
-		if (min > laser.ranges[i] || min == -1)
+		if (min >= laser.ranges[i] || min == -1)
 		{
 			min = laser.ranges[i];
 			indexEdge = i;
@@ -108,33 +108,37 @@ void ParkingController::turnDistance(const sensor_msgs::LaserScan laser)
 	ROS_WARN("[PAC]: (minEdge,maxEdge)-(%i,%i)-(%f,%f): %2.8f", indexMinEdge,
 			indexMaxEdge, rayAtMinEdge, rayAccordingToEdge, gamma);
 
-////	if (rayAccordingToEdge > rayAtMinEdge * 2)
-////	{
-////		return;
-////	}
-//	// TODO: rechung beim schraegstehen testen --> ist falsch
-////	[ WARN] [1387057245.476250513]: [PAC]: (minEdge,maxEdge)-(511,478)-(0.177000,0.218000): 0.00025157
-////	[ INFO] [1387057245.476900005]: [PAC]: sideC of Triangle: 0.041000
-////	[ INFO] [1387057245.477247833]: [PAC]: ---Triangle Complement - cannot see ---
-////	[ INFO] [1387057245.477533480]: [PAC]: distances(h,v) - (0.000293, 0.177000)
-////	[ INFO] [1387057245.477710817]: [PAC]: left - vertical Distance is 0.177000
-//
-//	// sideC is on the obstacle
-//	// c = sqrt(a²+b²-2ab*cos(gamma));
+	////	if (rayAccordingToEdge > rayAtMinEdge * 2)
+	////	{
+	////		return;
+	////	}
+	//	// TODO: rechung beim schraegstehen testen --> ist falsch
+	////	[ WARN] [1387057245.476250513]: [PAC]: (minEdge,maxEdge)-(511,478)-(0.177000,0.218000): 0.00025157
+	////	[ INFO] [1387057245.476900005]: [PAC]: sideC of Triangle: 0.041000
+	////	[ INFO] [1387057245.477247833]: [PAC]: ---Triangle Complement - cannot see ---
+	////	[ INFO] [1387057245.477533480]: [PAC]: distances(h,v) - (0.000293, 0.177000)
+	////	[ INFO] [1387057245.477710817]: [PAC]: left - vertical Distance is 0.177000
+	//
+	//	// sideC is on the obstacle
+	//	// c = sqrt(a²+b²-2ab*cos(gamma));
 
 	float sideC = sqrt(
 			(rayAccordingToEdge * rayAccordingToEdge)
-				+ (rayAtMinEdge * rayAtMinEdge)
-				- (2 * rayAtMinEdge * rayAccordingToEdge) * cos(gamma));
+			+ (rayAtMinEdge * rayAtMinEdge)
+			- (2 * rayAtMinEdge * rayAccordingToEdge) * cos(gamma));
 
-//	ROS_INFO("[PAC]: sideC of Triangle: %f", sideC);
-// 	alpha = acos((b² + c² - a²) / 2*b*c);
+	//	ROS_INFO("[PAC]: sideC of Triangle: %f", sideC);
+	// 	alpha = acos((b² + c² - a²) / 2*b*c);
 
-	float alphaOnObstacle = acos(
-			((rayAtMinEdge * rayAtMinEdge)
-					+ (sideC * sideC)
-					- (rayAccordingToEdge * rayAccordingToEdge))
-					/ (2 * rayAtMinEdge * sideC));
+	float alphaOnObstacle = acos(((rayAtMinEdge * rayAtMinEdge) + (sideC * sideC) - (rayAccordingToEdge * rayAccordingToEdge)) / (2 * rayAtMinEdge * sideC));
+
+//	float alphaOnObstacle2 = asin(rayAccordingToEdge*sin(gamma)/sideC);
+//
+//	if(alphaOnObstacle != alphaOnObstacle2)
+//	{
+//		ROS_ERROR("[PAC::turnDistance] A: %f, B: %f", ((180 * alphaOnObstacle)/(M_PI)), ((180*alphaOnObstacle2)/(M_PI)));
+//		alphaOnObstacle = alphaOnObstacle2;
+//	}
 
 	float epsilon = M_PI - gamma - alphaOnObstacle;
 	//ROS_INFO("[PAC]: ---Triangle Complement - cannot see ---");
@@ -144,14 +148,19 @@ void ParkingController::turnDistance(const sensor_msgs::LaserScan laser)
 	//ROS_INFO("rayAccordingTo: %f, alphaOnObstacle: %f, gamma: %f", epsilon, alphaOnObstacle, gamma);
 
 	horizontalDistanceToObstacle = sin(epsilon) * rayAccordingToEdge;
+	float horizontalDistanceToObstacle1 = sin(alphaComplement) * rayAtMinEdge;
+
+	ROS_INFO("[PAC] horizontal: %f", horizontalDistanceToObstacle);
+	ROS_INFO("[PAC] horizontal1: %f", horizontalDistanceToObstacle1);
+
 	verticalDistanceToObstacle = cos(alphaComplement) * rayAtMinEdge;
 	ROS_INFO("[PAC]: distances(h,v) - (%f, %f)", horizontalDistanceToObstacle,
 			verticalDistanceToObstacle);
 
-//	float orientation1 = abs(indexMaxEdge) * laser.angle_increment;	//Winkel bis maxEdge
-//	float orientation2 = M_PI / 2 - epsilon;						//Winkel zwischen MaxEdge und horizontal
-//	float orientation = M_PI - (orientation1 + orientation2);
-	float orientation = (M_PI / 2) - (abs(indexMaxEdge) * laser.angle_increment) + epsilon;
+	float orientation1 = abs(indexMaxEdge) * laser.angle_increment;	//Winkel bis maxEdge
+	float orientation2 = M_PI / 2 - epsilon;						//Winkel zwischen MaxEdge und horizontal
+	float orientation = M_PI - (orientation1 + orientation2);
+	//float orientation = (M_PI / 2) - (abs(indexMaxEdge) * laser.angle_increment) + epsilon;
 	rearWheelHorizontal = this->calculateRearWheelHorizontal(horizontalDistanceToObstacle, orientation);
 }
 
@@ -162,6 +171,7 @@ float ParkingController::calculateRearWheelHorizontal(float frontHorizontal, flo
 	//cos(a) * Hypothenuse = Ankathete
 	float cathetus = cos(orientation) * LASER_REAR_DISTANCE;
 
+	ROS_INFO("[PAC::calculateRearWheelHorizontal] orientation: %f", ((180*orientation)/(M_PI)));
 	ROS_INFO("[PAC::calculateRearWheelHorizontal] cathetus: %f", cathetus);
 	ROS_INFO("[PAC::calculateRearWheelHorizontal] return %f", (frontHorizontal - cathetus));
 
@@ -181,53 +191,53 @@ void ParkingController::LaserScanParkControll(const sensor_msgs::LaserScan laser
 		right_turn = false;
 		//left_turn = false;
 	}
-//	else if (verticalDistanceToObstacle < LEFTTURN)
-//	{
-//		ROS_INFO("left");
-//		//left_turn = true;
-//		right_turn = false;
-//	}
+	//	else if (verticalDistanceToObstacle < LEFTTURN)
+	//	{
+	//		ROS_INFO("left");
+	//		//left_turn = true;
+	//		right_turn = false;
+	//	}
 	else
 	{
 		//right_turn = true;
 	}
 
 	// Rechtskurve
-//	if (right_turn && horizontalDistanceToObstacle < RIGHTTURN)
-//			//&& horizontalDistanceToObstacle > PARALLELDISTANCE)
-//	{
-//		ROS_INFO("[PAC]: right - horizontal Distance is %f",
-//				horizontalDistanceToObstacle);
-//		right_turn = true;
-//	}
-//	else
-//	{
-//		right_turn = false; // Linkskurve beginnen
-//		left_turn = true;
-//	}
-//
-//	// Linkskurve
-//	if (left_turn && verticalDistanceToObstacle < LEFTTURN)
-//	{
-//		ROS_INFO("[PAC]: left - vertical Distance is %f",
-//				verticalDistanceToObstacle);
-//	}
-//	else
-//	{
-//		left_turn = false;
-//		straight_turn = true;
-//	}
-//
-//	if (straight_turn && verticalDistanceToObstacle < SECUREDISTANCE_FRONT
-//			&& horizontalDistanceToObstacle < MINDISTANCE)
-//	{
-//		ROS_INFO("[PaCo]: straight distance is (h,v) - (%f, %f)",
-//				horizontalDistanceToObstacle, verticalDistanceToObstacle);
-//	}
-//	else
-//	{
-//		straight_turn = false;
-//	}
+	//	if (right_turn && horizontalDistanceToObstacle < RIGHTTURN)
+	//			//&& horizontalDistanceToObstacle > PARALLELDISTANCE)
+	//	{
+	//		ROS_INFO("[PAC]: right - horizontal Distance is %f",
+	//				horizontalDistanceToObstacle);
+	//		right_turn = true;
+	//	}
+	//	else
+	//	{
+	//		right_turn = false; // Linkskurve beginnen
+	//		left_turn = true;
+	//	}
+	//
+	//	// Linkskurve
+	//	if (left_turn && verticalDistanceToObstacle < LEFTTURN)
+	//	{
+	//		ROS_INFO("[PAC]: left - vertical Distance is %f",
+	//				verticalDistanceToObstacle);
+	//	}
+	//	else
+	//	{
+	//		left_turn = false;
+	//		straight_turn = true;
+	//	}
+	//
+	//	if (straight_turn && verticalDistanceToObstacle < SECUREDISTANCE_FRONT
+	//			&& horizontalDistanceToObstacle < MINDISTANCE)
+	//	{
+	//		ROS_INFO("[PaCo]: straight distance is (h,v) - (%f, %f)",
+	//				horizontalDistanceToObstacle, verticalDistanceToObstacle);
+	//	}
+	//	else
+	//	{
+	//		straight_turn = false;
+	//	}
 
 	// TODO Parken nachziehen
 }
@@ -239,7 +249,7 @@ float ParkingController::getFrontDistance()
 
 float ParkingController::getMinimalDistance()
 {
-// TODO  aktualisieren, da -1 schlecht beim vergleichen der werte besser 99 (BIGRANGE)
+	// TODO  aktualisieren, da -1 schlecht beim vergleichen der werte besser 99 (BIGRANGE)
 	if (minimalDistance == -1)
 	{
 		for (int i = 0; i < this->laser.ranges.size(); i++)

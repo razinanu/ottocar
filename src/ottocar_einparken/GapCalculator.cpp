@@ -51,7 +51,7 @@ GapCalculator::GapCalculator() :
 bool GapCalculator::LaserScanGapCal(const sensor_msgs::LaserScan laser)
 {
 
-//	ROS_WARN("[GAPCAl]: -----------------");
+	ROS_WARN("[GAPCAl]: -----------------");
 	minVDistance = 0;
 
 	angle = laser.angle_max;
@@ -87,8 +87,8 @@ bool GapCalculator::LaserScanGapCal(const sensor_msgs::LaserScan laser)
 				baseVDistance = laser.ranges[i] * sin(laser.angle_max - angle);
 				//baseVDistance = laser.ranges[i] * sin(counter*laser.angle_increment);
 				baseHDistance = laser.ranges[i] * cos(laser.angle_max - angle);
-				baseHDistance = laser.ranges[i]
-						* cos(counter * laser.angle_increment);
+//				baseHDistance = laser.ranges[i]
+//						* cos(counter * laser.angle_increment);
 
 //				ROS_INFO(
 //						"BaseRange value: angle=[%f],range[%d]=[%f]:  ", (angle * 180) / Pi, i, laser.ranges[i]);
@@ -123,7 +123,7 @@ bool GapCalculator::LaserScanGapCal(const sensor_msgs::LaserScan laser)
 //				ROS_INFO(
 //						"[GAPCAl]:MIN value: angle=[%f],range[%d]=[%f]:  ", (angle * 180) / Pi, i, laser.ranges[i]);
 //				ROS_INFO("[GAPCAl]:MIN Vertical: %f   ", minVDistance);
-//				space = minVDistance - baseVDistance;
+				space = minVDistance - baseVDistance;
 //				ROS_INFO("[GAPCAl]: Space is: %f ", space);
 //				if (currentSearchState == followGap)
 //				{
@@ -132,10 +132,10 @@ bool GapCalculator::LaserScanGapCal(const sensor_msgs::LaserScan laser)
 
 				if (0.65 < space && space < 0.75)
 				{
-//					ROS_INFO("[GAPCAl]: best Gap has been found");
+					ROS_INFO("[GAPCAl]: best Gap has been found");
 //					currentSearchState = followGap;
 					gapDistance = minVDistance;
-//					ROS_ERROR("[GAPCAl]: gapDistance: %f ", gapDistance);
+					ROS_ERROR("[GAPCAl]: gapDistance: %f ", gapDistance);
 
 					//return true;
 				}
