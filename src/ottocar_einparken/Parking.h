@@ -35,8 +35,6 @@ private:
 	ros::Subscriber sensor_ir1_Subscriber;
 	ros::Subscriber sensor_ir2_Subscriber;
 
-
-
 public:
 	Parking();
 	virtual ~Parking();
@@ -61,6 +59,7 @@ public:
 	float intoGapSpeed;
 	float distanceBack;
 	float distanceSide;
+	sensor_msgs::LaserScan g_laser;
 
 };
 

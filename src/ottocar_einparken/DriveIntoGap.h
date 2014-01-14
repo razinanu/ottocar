@@ -77,6 +77,10 @@ private:
 	//temporär, bis sinnvolle Methoden von Simone kommen:
 	//###################################################
 
+	//licht START
+	ros::Time lastTime;
+	int mode;
+	//licht ENDE
 };
 
 #endif /* DRIVEINTOGAP_H_ */

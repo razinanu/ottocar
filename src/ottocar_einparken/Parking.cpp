@@ -54,10 +54,12 @@ void Parking::scanValues(sensor_msgs::LaserScan laser)
 //	ParkingController_ = true;
 	if (ParkingController_)
 	{
-		float size = 60.0;
-		DriveIntoGap::twoInts twoInts = driveIntoGap.drive(laser, size, distanceBack, distanceSide);
-		intoGapAngle = twoInts.angle;
-		intoGapSpeed = twoInts.speed;
+//		float size = 60.0;
+//		DriveIntoGap::twoInts twoInts = driveIntoGap.drive(laser, BESTGAPLENGTH, distanceBack, distanceSide);
+//		intoGapAngle = twoInts.angle;
+//		intoGapSpeed = twoInts.speed;
+
+		g_laser = laser;
 	}
 
 }
@@ -156,7 +158,7 @@ int main(int argc, char** argv)
 			//
 			if (park.parallel.driveEnable())
 			{
-				data = driver.moveToGap(park.distanceSide, park.gapcal.getGapDistance());
+				data = driver.moveToGap(park.distanceSide, park.distanceBack, park.gapcal.getGapDistance());
 
 				if (data.speed.data == 0)
 				{
@@ -173,6 +175,10 @@ int main(int argc, char** argv)
 		//drive into the gap
 		else if(park.ParkingController_)
 		{
+			DriveIntoGap::twoInts twoInts = park.driveIntoGap.drive(park.g_laser, BESTGAPLENGTH, park.distanceBack, park.distanceSide);
+			park.intoGapAngle = twoInts.angle;
+			park.intoGapSpeed = twoInts.speed;
+
 			std_msgs::Int8 angle;
 			angle.data = park.intoGapAngle;
 
