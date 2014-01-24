@@ -23,7 +23,7 @@ MoveToGap::driveData MoveToGap::moveToGap(float dataIRside, float dataIRback, fl
 {
 	driveData result;
 
-	result.angle.data = -25;
+	result.angle.data = STRAIGHTFORWARD;
 	result.speed.data = -8;
 
 	ROS_INFO("distanceTOGap: %2.4f | IR: %2.4f", distanceToGap, dataIRside);
@@ -36,7 +36,7 @@ MoveToGap::driveData MoveToGap::moveToGap(float dataIRside, float dataIRback, fl
 		if (distanceToGap > 0 && distanceToGap < 3)
 		{
 			distanceFound = ros::Time::now();
-			timeToDrive = (distanceToGap / 0.4);	//todo minus einen wert x
+			timeToDrive = ((distanceToGap - 0.15) / 0.4);	//todo minus einen wert x
 			mode = 1;
 		}
 		break;
@@ -53,7 +53,7 @@ MoveToGap::driveData MoveToGap::moveToGap(float dataIRside, float dataIRback, fl
 	case 2:
 	{
 		//auf das Ende der Lücke warten, bis der  IR-Sensor den Karton sieht
-		if (dataIRside < 12)
+		if (dataIRside < 20)
 		{
 			mode = 3;
 		}
@@ -63,7 +63,7 @@ MoveToGap::driveData MoveToGap::moveToGap(float dataIRside, float dataIRback, fl
 	case 3:
 	{
 		//verzögert hinter der Lücke anhalten
-		if (gapBegin < (ros::Time::now() - ros::Duration(0.45)))
+		if (gapBegin < (ros::Time::now() - ros::Duration(0.20)))
 		{
 			result.speed.data = 0;
 			lastTime = ros::Time::now();
@@ -155,7 +155,7 @@ MoveToGap::driveData MoveToGap::moveToGap(float dataIRside, float dataIRback, fl
 
 	default:
 	{
-		result.angle.data = -21;
+		result.angle.data = STRAIGHTFORWARD;
 		result.speed.data = 0;
 		break;
 	}

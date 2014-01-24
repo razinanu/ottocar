@@ -22,7 +22,7 @@ DriveIntoGap::~DriveIntoGap()
 }
 
 DriveIntoGap::twoInts DriveIntoGap::drive(sensor_msgs::LaserScan laser,
-		float gapSize, float distanceBack, float distanceSide)
+		float gapSize, float distanceBack, float distanceSide, int odometrie)
 {
 //	this->gapSize = gapSize;
 //	parkingController.LaserScanParkControll(laser);
@@ -37,39 +37,74 @@ DriveIntoGap::twoInts DriveIntoGap::drive(sensor_msgs::LaserScan laser,
 	//licht START
 	switch (mode)
 	{
+	//initialisieren
 	case 3:
 	{
 		lastTime = ros::Time::now();
 		mode = 4;
 		break;
 	}
+
+	//warten
 	case 4:
 	{
-		//warten
-		if ((lastTime + ros::Duration(1)) < ros::Time::now())
+		if ((lastTime + ros::Duration(0.5)) < ros::Time::now())
 		{
 			lastTime = ros::Time::now();
+			lastOdometrie = odometrie;
 			mode = 5;
+			ROS_INFO("lastodo: %d", odometrie);
 		}
-		speedAndAngle.angle = -21;
+		speedAndAngle.angle = STRAIGHTFORWARD;
 		speedAndAngle.speed = 0;
 		break;
 	}
+
+	//rückwärts in die Parklücke einfahren 1. Teil
 	case 5:
 	{
-		//rückwärts in die Parklücke einfahren 1. Teil
-		if ((lastTime + ros::Duration(1.5)) < ros::Time::now())
+		if (gapSize == (float) 0.6)
 		{
-			lastTime = ros::Time::now();
-			mode = 6;
+			ROS_INFO("odo: %d | lastodo: %d | d: %d",odometrie, lastOdometrie, abs( abs(lastOdometrie) - abs(odometrie)));
+			if (abs( abs(lastOdometrie) - abs(odometrie)) > 37) //((lastTime + ros::Duration(1.5)) < ros::Time::now())
+			{
+				lastTime = ros::Time::now();
+				mode = 6;	//todo 6
+			}
 		}
+
+		else if (gapSize == (float) 0.7)
+		{
+			if ((lastTime + ros::Duration(1.6)) < ros::Time::now())
+			{
+				lastTime = ros::Time::now();
+				mode = 6;
+			}
+		}
+
+		else if (gapSize == (float) 0.8)
+		{
+			if ((lastTime + ros::Duration(1.6)) < ros::Time::now())
+			{
+				lastTime = ros::Time::now();
+				mode = 6;
+			}
+		}
+		else
+		{
+			ROS_INFO("gapSize: %2.32f", gapSize);
+			ROS_INFO("gapSize: %2.32f", (float) 0.6);
+			mode = 25;
+		}
+
 		speedAndAngle.angle = RIGHT_MAX;
 		speedAndAngle.speed = 8;
 		break;
 	}
+
+	//warten
 	case 6:
 	{
-		//warten
 		if ((lastTime + ros::Duration(0.5)) < ros::Time::now())
 		{
 			lastTime = ros::Time::now();
@@ -78,10 +113,11 @@ DriveIntoGap::twoInts DriveIntoGap::drive(sensor_msgs::LaserScan laser,
 		speedAndAngle.speed = 0;
 		break;
 	}
+
+	//rückwärts in die Parklücke einfahren 2. Teil mit timeout
 	case 7:
 	{
-		//rückwärts in die Parklücke einfahren 2. Teil
-		if (distanceBack < 11)
+		if (distanceBack < 11 || (lastTime + ros::Duration(3)) < ros::Time::now())
 		{
 			lastTime = ros::Time::now();
 			mode = 8;
@@ -90,9 +126,10 @@ DriveIntoGap::twoInts DriveIntoGap::drive(sensor_msgs::LaserScan laser,
 		speedAndAngle.speed = 7;
 		break;
 	}
+
+	//warten
 	case 8:
 	{
-		//warten
 		if ((lastTime + ros::Duration(0.5)) < ros::Time::now())
 		{
 			lastTime = ros::Time::now();
@@ -101,9 +138,10 @@ DriveIntoGap::twoInts DriveIntoGap::drive(sensor_msgs::LaserScan laser,
 		speedAndAngle.speed = 0;
 		break;
 	}
+
+	//vorwärts mit laser & zeit fahren
 	case 9:
 	{
-		//vorwärts mit laser & zeit fahren
 		for (int i = 255 - 50; i <= 255 + 50; i++)
 		{
 			if ((laser.ranges[i] < 0.2) || (lastTime + ros::Duration(1.0)) < ros::Time::now())		//todo timeout sinnvoll?
@@ -112,47 +150,40 @@ DriveIntoGap::twoInts DriveIntoGap::drive(sensor_msgs::LaserScan laser,
 				mode = 10;
 			}
 		}
-
-		//kurz vorwärts fahren
-//		if ((lastTime + ros::Duration(0.5)) < ros::Time::now())
-//		{
-//			lastTime = ros::Time::now();
-//			mode = 10;
-//		}
-
 		speedAndAngle.angle = RIGHT_MAX;
 		speedAndAngle.speed = - 7;
 		break;
 	}
+
+	//warten
 	case 10:
 	{
-		//warten
 		if ((lastTime + ros::Duration(0.5)) < ros::Time::now())
 		{
 			lastTime = ros::Time::now();
 			mode = 11;
 		}
-		speedAndAngle.angle = -21;
+		speedAndAngle.angle = STRAIGHTFORWARD;
 		speedAndAngle.speed = 0;
 		break;
 	}
 
+	//wieder kurz zurück, um mindestabstand einzuhalten
 	case 11:
 	{
-		//wieder kurz zurück, um mindestabstand einzuhalten
-		if ((lastTime + ros::Duration(0.4)) < ros::Time::now() && distanceBack > 11)
+		if ((lastTime + ros::Duration(0.4)) < ros::Time::now() || distanceBack < 11)
 		{
 			lastTime = ros::Time::now();
 			mode = 12;
 		}
-		speedAndAngle.angle = -21;
+		speedAndAngle.angle = STRAIGHTFORWARD;
 		speedAndAngle.speed =  7;
 		break;
 	}
 
 	default:
 	{
-		speedAndAngle.angle = -21;
+		speedAndAngle.angle = STRAIGHTFORWARD;
 		speedAndAngle.speed = 0;
 		break;
 	}
