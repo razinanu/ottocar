@@ -24,7 +24,7 @@ public:
 	MoveToGap();
 	virtual ~MoveToGap();
 
-	driveData moveToGap(float dataIRside, float dataIRback,  float distanceToGap);
+	driveData moveToGap(float dataIRside, float dataIRback,  float distanceToGap, float voltage);
 private:
 	bool cartonSeen;
 	bool distanceGot;
@@ -33,6 +33,8 @@ private:
 	ros::Time lastTime;
 	float timeToDrive;
 	int mode;
+
+	float calculateSpeed10(float voltage);
 };
 
 #endif /* MOVETOGAP_H_ */

@@ -48,7 +48,7 @@ void Calibration::scanValues(sensor_msgs::LaserScan laser)
 	case 1:
 		if (laser.ranges[laser.ranges.size() - 1] > 0.3)
 		{
-//			ROS_INFO("Voltage: %2.8f", voltage);
+			ROS_INFO("Messung start");
 			status = 2;
 			start = ros::Time::now();
 		}
@@ -81,6 +81,64 @@ void Calibration::voltageValues(std_msgs::Float32 msg)
 //	ROS_INFO("Voltage: %2.8f", voltage);
 }
 
+float Calibration::linearizeBack(float value)
+{
+	if (value > 0.1)
+	{
+		return 0.1194 / (value + 0.028);
+	}
+	else
+	{
+		return 0.4;
+	}
+
+
+//	float error = 40.0;
+//
+//// drei geraden zur annaeherung an die funktion
+//	if (value > 1.25 && value < 4.0)
+//	{
+//		return (1 / (-1.45 / 6)) * value + (432 / 29);
+//	}
+//	else if (value > 0.8)
+//	{
+//		return (1 / (-1.45 / 6)) * value + (432 / 29);
+//	}
+//	else if (value > 0.3)
+//	{
+//		return (1 / (-0.075)) * value + (80 / 3);
+//	}
+//	else
+//	{
+////		ROS_INFO("[PAR]: linearlize of %f", value);
+//		return error;
+//	}
+}
+
+float Calibration::linearizeSide(float value)
+{
+	if (value > 0.1)
+	{
+		return 0.1128 / (value - 0.124);
+	}
+	else
+	{
+		return 0.4;
+	}
+}
+
+void Calibration::ir1Values(std_msgs::Float32 sensor)
+{
+	this->distanceBack = linearizeBack(sensor.data);
+
+}
+
+void Calibration::ir2Values(const std_msgs::Float32 sensor)
+{
+	this->distanceSide = linearizeSide(sensor.data);
+
+}
+
 void Calibration::init()
 {
 	anglePub = n.advertise<std_msgs::Int8>("angle_cmd", 1);
@@ -88,6 +146,11 @@ void Calibration::init()
 	hokuyoSub = n.subscribe("/scan", 1, &Calibration::scanValues,
 			this);
 	voltageSub = n.subscribe("/sensor_voltage", 1, &Calibration::voltageValues, this);
+
+	sensor_ir1_Subscriber = n.subscribe("/sensor_IR1", 1,
+			&Calibration::ir1Values, this);
+	sensor_ir2_Subscriber = n.subscribe("/sensor_IR2", 1,
+			&Calibration::ir2Values, this);
 
 	ros::Duration(1).sleep();
 }
@@ -149,16 +212,18 @@ int main(int argc, char** argv)
 	cal.anglePub.publish(data.angle);
 	ros::Duration(0.4).sleep();
 
-	ROS_INFO("[PAR]: Parking gestartet");
-
+	ROS_INFO("[CAL]: Calibration gestartet");
 
 	while (ros::ok)
 	{
 
+//		ROS_INFO("[CAL]: distanceBack: %2.4f ",cal.distanceBack);
+//		ROS_INFO("[CAL]: distanceSide: %2.4f ",cal.distanceSide);
+
 		if (cal.driveEnable)
 		{
 			data.angle.data = STRAIGHTFORWARD;
-			data.speed.data = -8;
+			data.speed.data = 10;
 		}
 		else
 		{
@@ -172,7 +237,7 @@ int main(int argc, char** argv)
 		loop_rate.sleep();
 	}
 
-	ROS_WARN("[PAR]: Parking beendet");
+	ROS_WARN("[CAL]: Calibration beendet");
 	return 0;
 }
 

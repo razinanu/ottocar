@@ -23,7 +23,7 @@ const float FIRSTDISTANCE = 0.2;
 const float BESTGAPLENGTH=0.6;
 
 //Lenkwerte
-const int STRAIGHTFORWARD = 0;
+const int STRAIGHTFORWARD = -15;
 const int LEFT_MAX = -127;
 const int RIGHT_MAX = 126;
 

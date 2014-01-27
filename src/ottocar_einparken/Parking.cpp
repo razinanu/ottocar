@@ -64,40 +64,68 @@ void Parking::scanValues(sensor_msgs::LaserScan laser)
 
 }
 
-float Parking::linearize(float value)
+float Parking::linearizeBack(float value)
 {
-	float error = 40.0;
-
-// drei geraden zur annaeherung an die funktion
-	if (value > 1.25 && value < 4.0)
+	if (value > 0.1)
 	{
-		return (1 / (-1.45 / 6)) * value + (432 / 29);
-	}
-	else if (value > 0.8)
-	{
-		return (1 / (-1.45 / 6)) * value + (432 / 29);
-	}
-	else if (value > 0.3)
-	{
-		return (1 / (-0.075)) * value + (80 / 3);
+		return 0.1194 / (value + 0.028);
 	}
 	else
 	{
-//		ROS_INFO("[PAR]: linearlize of %f", value);
-		return error;
+		return 0.4;
+	}
+
+	//diese Berechnung hat einen Sprung zwischen 10 und 15cm
+//	float error = 40.0;
+//
+//// drei geraden zur annaeherung an die funktion
+//	if (value > 1.25 && value < 4.0)
+//	{
+//		return (1 / (-1.45 / 6)) * value + (432 / 29);
+//	}
+//	else if (value > 0.8)
+//	{
+//		return (1 / (-1.45 / 6)) * value + (432 / 29);
+//	}
+//	else if (value > 0.3)
+//	{
+//		return (1 / (-0.075)) * value + (80 / 3);
+//	}
+//	else
+//	{
+////		ROS_INFO("[PAR]: linearlize of %f", value);
+//		return error;
+//	}
+}
+
+float Parking::linearizeSide(float value)
+{
+	if (value > 0.1)
+	{
+		return 0.1128 / (value - 0.124);
+	}
+	else
+	{
+		return 0.4;
 	}
 }
 
 void Parking::ir1Values(std_msgs::Float32 sensor)
 {
-	this->distanceBack = linearize(sensor.data);
+	this->distanceBack = linearizeBack(sensor.data);
 //	ROS_INFO("[PAR]: IR1: (V,%f) and (D,%f)", sensor.data, distanceBack);
 }
 
 void Parking::ir2Values(const std_msgs::Float32 sensor)
 {
-	this->distanceSide = linearize(sensor.data);
+	this->distanceSide = linearizeSide(sensor.data);
 //	ROS_INFO("[PAR]: IR2: (V,%f) and (D,%f)", sensor.data, distanceSide);
+}
+
+void Parking::voltageValues(std_msgs::Float32 msg)
+{
+	voltage = msg.data;
+	//todo Klasse Ringpuffer schreiben
 }
 
 void Parking::init()
@@ -110,6 +138,8 @@ void Parking::init()
 			&Parking::ir1Values, this);
 	sensor_ir2_Subscriber = parkingNode.subscribe("/sensor_IR2", 1,
 			&Parking::ir2Values, this);
+	sensor_voltage = parkingNode.subscribe("/sensor_voltage", 1,
+			&Parking::voltageValues, this);
 
 	ros::Duration(1).sleep();
 }
@@ -158,7 +188,7 @@ int main(int argc, char** argv)
 			//
 			if (park.parallel.driveEnable())
 			{
-				data = driver.moveToGap(park.distanceSide, park.distanceBack, park.gapcal.getGapDistance());
+				data = driver.moveToGap(park.distanceSide, park.distanceBack, park.gapcal.getGapDistance(), park.voltage);
 
 				if (data.speed.data == 0)
 				{
@@ -175,7 +205,7 @@ int main(int argc, char** argv)
 		//drive into the gap
 		else if(park.ParkingController_)
 		{
-			DriveIntoGap::twoInts twoInts = park.driveIntoGap.drive(park.g_laser, BESTGAPLENGTH, park.distanceBack, park.distanceSide);
+			DriveIntoGap::twoInts twoInts = park.driveIntoGap.drive(park.g_laser, BESTGAPLENGTH, park.distanceBack, park.distanceSide,0, park.voltage);
 			park.intoGapAngle = twoInts.angle;
 			park.intoGapSpeed = twoInts.speed;
 

@@ -14,6 +14,7 @@
 #include "std_msgs/Int8.h"
 #include "std_msgs/Float32.h"
 #include "MoveToGap.h"
+#include "Parking.h"
 
 class Calibration
 {
@@ -22,11 +23,12 @@ public:
 	virtual ~Calibration();
 	void init();
 
+	float voltage;
 	bool driveEnable;
 	ros::Publisher anglePub;
 	ros::Publisher speedPub;
 
-private:
+
 	void scanValues(sensor_msgs::LaserScan laser);
 	void voltageValues(std_msgs::Float32 msg);
 	void writeToBuffer(float value_V);
@@ -36,7 +38,14 @@ private:
 	int bufferSize;
 	int bufferPointer;
 
-	float voltage;
+	void ir1Values(std_msgs::Float32 sensor);
+	void ir2Values(std_msgs::Float32 sensor);
+	float linearizeBack(float value);
+	float linearizeSide(float value);
+
+	float distanceBack;
+	float distanceSide;
+
 	int status;
 	ros::Time start;
 
@@ -44,6 +53,9 @@ private:
 
 	ros::Subscriber hokuyoSub;
 	ros::Subscriber voltageSub;
+
+	ros::Subscriber sensor_ir1_Subscriber;
+	ros::Subscriber sensor_ir2_Subscriber;
 };
 
 #endif /* CALIBRATION_H_ */

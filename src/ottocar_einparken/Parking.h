@@ -34,6 +34,7 @@ private:
 	ros::Subscriber hokuyoSubscriber;
 	ros::Subscriber sensor_ir1_Subscriber;
 	ros::Subscriber sensor_ir2_Subscriber;
+	ros::Subscriber sensor_voltage;
 
 public:
 	Parking();
@@ -53,12 +54,15 @@ public:
 
 	void ir1Values(const std_msgs::Float32 sensor);
 	void ir2Values(const std_msgs::Float32 sensor);
-	float linearize(float sensor);
+	void voltageValues(std_msgs::Float32 msg);
+	float linearizeBack(float sensor);
+	float linearizeSide(float value);
 
 	float intoGapAngle;
 	float intoGapSpeed;
 	float distanceBack;
 	float distanceSide;
+	float voltage;
 	sensor_msgs::LaserScan g_laser;
 
 };

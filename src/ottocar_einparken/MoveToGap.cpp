@@ -19,24 +19,34 @@ MoveToGap::~MoveToGap()
 {
 }
 
-MoveToGap::driveData MoveToGap::moveToGap(float dataIRside, float dataIRback, float distanceToGap)
+/// berechnet die Geschwindigkeit in m/s in Abhaengigkeit der Akkuspannung fuer die Geschwindigkeit -10
+float MoveToGap::calculateSpeed10(float voltage)
+{
+	float result;
+	result = 0.05083733 * voltage - 0.3547296;
+	ROS_INFO("[MTG]: voltage: %2.4f | speed: %2.4f", voltage, result);
+	return result;
+}
+
+MoveToGap::driveData MoveToGap::moveToGap(float dataIRside, float dataIRback, float distanceToGap, float voltage)
 {
 	driveData result;
 
 	result.angle.data = STRAIGHTFORWARD;
-	result.speed.data = -8;
+	result.speed.data = -10;
 
-	ROS_INFO("distanceTOGap: %2.4f | IR: %2.4f", distanceToGap, dataIRside);
+//	ROS_INFO("distanceTOGap: %2.4f | IR: %2.4f", distanceToGap, dataIRside);
 
 	switch(mode)
 	{
 	case 0:
 	{
 		//Auf eine Entfernung zur besten Lücke warten
-		if (distanceToGap > 0 && distanceToGap < 3)
+		if (distanceToGap > 0 && distanceToGap < 1.0)	//todo ab wann den Wert akzeptieren?
 		{
+			ROS_INFO("[MTG]: distanceTOGap: %2.4f | IR: %2.4f", distanceToGap, dataIRside);
 			distanceFound = ros::Time::now();
-			timeToDrive = ((distanceToGap - 0.15) / 0.4);	//todo minus einen wert x
+			timeToDrive = ((distanceToGap - 0.15) / calculateSpeed10(voltage));	//todo minus einen wert x
 			mode = 1;
 		}
 		break;
@@ -46,6 +56,7 @@ MoveToGap::driveData MoveToGap::moveToGap(float dataIRside, float dataIRback, fl
 		//darauf warten, dass das Auto in der besten Lücke steht
 		if ((distanceFound + ros::Duration(timeToDrive)) < ros::Time::now())
 		{
+			ROS_INFO("[MTG]: In der Mitte neben der Luecke: %2.2f", dataIRside);
 			mode = 2;
 		}
 		break;
@@ -53,18 +64,21 @@ MoveToGap::driveData MoveToGap::moveToGap(float dataIRside, float dataIRback, fl
 	case 2:
 	{
 		//auf das Ende der Lücke warten, bis der  IR-Sensor den Karton sieht
-		if (dataIRside < 20)
+		if (dataIRside < 0.2)
 		{
+			ROS_INFO("[MTG]: Ende der Luecke gesehen: %2.2f", dataIRside);
+			gapBegin = ros::Time::now();
+			timeToDrive = (0.15 / calculateSpeed10(voltage));
 			mode = 3;
 		}
-		gapBegin = ros::Time::now();
 		break;
 	}
 	case 3:
 	{
 		//verzögert hinter der Lücke anhalten
-		if (gapBegin < (ros::Time::now() - ros::Duration(0.20)))
+		if ((gapBegin + ros::Duration(timeToDrive)) < ros::Time::now())
 		{
+			ROS_INFO("[MTG]: hinter der Luecke angehalten");
 			result.speed.data = 0;
 			lastTime = ros::Time::now();
 			mode = 4;

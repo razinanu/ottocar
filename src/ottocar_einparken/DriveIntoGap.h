@@ -30,7 +30,7 @@ public:
 	 * [1]: angle
 	 * [0]: speed
 	 */
-	twoInts drive(sensor_msgs::LaserScan laser, float gapSize, float distanceBack, float distanceSide, int odometrie);
+	twoInts drive(sensor_msgs::LaserScan laser, float gapSize, float distanceBack, float distanceSide, int odometrie, float voltage);
 
 private:
 
@@ -78,6 +78,9 @@ private:
 	//###################################################
 
 	//licht START
+	float calculateSpeed10(float voltage);
+
+	float timeToDrive;
 	ros::Time lastTime;
 	int mode;
 	uint lastOdometrie;
