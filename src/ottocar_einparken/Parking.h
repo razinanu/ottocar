@@ -72,4 +72,9 @@ public:
 
 };
 
+void driveToGap();
+void driveIntoGap();
+void shake();
+int init();
+
 #endif /* PARKING_H_ */
