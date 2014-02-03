@@ -8,8 +8,7 @@
 #include "Parking.h"
 
 Parking::Parking() :
-		GapCalculator_(true), ParallelController_(true), PositionController_(
-				true), ParkingController_(false)
+		GapCalculator_(true), ParallelController_(true), ParkingController_(false)
 {
 	intoGapAngle = 0;
 	intoGapSpeed = 0;
@@ -46,12 +45,7 @@ void Parking::scanValues(sensor_msgs::LaserScan laser)
 	{
 		parallel.laserScanParallel(laser);
 	}
-	//Whether the car is at correct Position to park.
-	//in case that car is at correct Position, PrkingController must be set to true
-	if (PositionController_)
-	{
-		position.LaserScanPosition(laser);
-	}
+
 	//ParkingController set to true, if the car is at correct position to park
 //	ParkingController_ = true;
 	if (ParkingController_)

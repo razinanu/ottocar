@@ -22,7 +22,6 @@
 #include "ConstPark.h"
 #include "ParallelController.h"
 #include "ParkingController.h"
-#include "PositionController.h"
 #include "DriveIntoGap.h"
 #include "MoveToGap.h"
 
@@ -43,11 +42,10 @@ public:
 	virtual ~Parking();
 	void scanValues(const sensor_msgs::LaserScan laser);
 	void init();
-	bool GapCalculator_, ParallelController_, PositionController_,
+	bool GapCalculator_, ParallelController_,
 			ParkingController_;
 	GapCalculator gapcal;
 	ParallelController parallel;
-	PositionController position;
 	ParkingController parkControll;
 	DriveIntoGap driveIntoGap;
 
