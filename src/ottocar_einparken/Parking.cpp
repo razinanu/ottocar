@@ -46,16 +46,6 @@ void Parking::scanValues(sensor_msgs::LaserScan laser)
 		parallel.laserScanParallel(laser);
 	}
 
-	//ParkingController set to true, if the car is at correct position to park
-//	ParkingController_ = true;
-	if (ParkingController_)
-	{
-//		float size = 60.0;
-//		DriveIntoGap::twoInts twoInts = driveIntoGap.drive(laser, BESTGAPLENGTH, distanceBack, distanceSide);
-//		intoGapAngle = twoInts.angle;
-//		intoGapSpeed = twoInts.speed;
-	}
-
 	g_laser = laser;
 
 }
@@ -70,28 +60,6 @@ float Parking::linearizeBack(float value)
 	{
 		return 0.4;
 	}
-
-	//diese Berechnung hat einen Sprung zwischen 10 und 15cm
-//	float error = 40.0;
-//
-//// drei geraden zur annaeherung an die funktion
-//	if (value > 1.25 && value < 4.0)
-//	{
-//		return (1 / (-1.45 / 6)) * value + (432 / 29);
-//	}
-//	else if (value > 0.8)
-//	{
-//		return (1 / (-1.45 / 6)) * value + (432 / 29);
-//	}
-//	else if (value > 0.3)
-//	{
-//		return (1 / (-0.075)) * value + (80 / 3);
-//	}
-//	else
-//	{
-////		ROS_INFO("[PAR]: linearlize of %f", value);
-//		return error;
-//	}
 }
 
 float Parking::linearizeSide(float value)

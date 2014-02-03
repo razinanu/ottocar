@@ -21,7 +21,6 @@
 #include "GapCalculator.h"
 #include "ConstPark.h"
 #include "ParallelController.h"
-#include "ParkingController.h"
 #include "DriveIntoGap.h"
 #include "MoveToGap.h"
 
@@ -42,11 +41,9 @@ public:
 	virtual ~Parking();
 	void scanValues(const sensor_msgs::LaserScan laser);
 	void init();
-	bool GapCalculator_, ParallelController_,
-			ParkingController_;
+	bool GapCalculator_, ParallelController_, ParkingController_;
 	GapCalculator gapcal;
 	ParallelController parallel;
-	ParkingController parkControll;
 	DriveIntoGap driveIntoGap;
 
 	ros::Publisher angle_pub;
