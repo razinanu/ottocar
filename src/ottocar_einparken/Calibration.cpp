@@ -14,6 +14,8 @@ Calibration::Calibration()
 	status = 0;
 	bufferSize = 20;
 	bufferPointer = 0;
+	motorRevolutions = 0;
+	motorRevolutionsSet = false;
 }
 
 Calibration::~Calibration()
@@ -33,6 +35,11 @@ void Calibration::scanValues(sensor_msgs::LaserScan laser)
 		driveEnable = true;
 	}
 
+	if (abs (abs(motorRevolutions) - abs(motorRevolutionsStart)) > 3200)
+	{
+		driveEnable = false;
+		ROS_INFO("[CAL]: motorRevolutions: %d", abs (abs(motorRevolutions) - abs(motorRevolutionsStart)));
+	}
 
 	//Zeitmessung
 	switch (status)
@@ -48,27 +55,24 @@ void Calibration::scanValues(sensor_msgs::LaserScan laser)
 	case 1:
 		if (laser.ranges[laser.ranges.size() - 1] > 0.3)
 		{
-			ROS_INFO("Messung start");
+			ROS_INFO("[CAL]: Messung start");
 			status = 2;
 			start = ros::Time::now();
+			motorRevolutionsStart = motorRevolutions;
 		}
 		break;
 	//zwischen dem 1. und 2. Karton
 	case 2:
 		if (laser.ranges[laser.ranges.size() - 1] < 0.3)
 		{
-			ROS_INFO("Voltage: %2.8f", getAverage());
-			cout << "[ INFO] [-#-#-#-#-#.-#-#-#-#-]: [Pat]: Fahrzeit: " << (ros::Time::now() - start) << endl;
+			ROS_INFO("[CAL]: Voltage: %2.8f", getAverage());
+			cout << "[ INFO] [-#-#-#-#-#.-#-#-#-#-]: [CAL]: Fahrzeit: " << (ros::Time::now() - start) << endl;
+			ROS_INFO("[CAL]: motorRevolutions: %d", abs (abs(motorRevolutions) - abs(motorRevolutionsStart)));
 			status = 3;
 		}
 		break;
 
-//	case 3:
-//		ROS_INFO("Voltage: %2.8f", voltage);
-//		status = 4;
-//		break;
 	default:
-		//nur fuer Testzwecke
 		driveEnable = false;
 		break;
 	}
@@ -139,6 +143,18 @@ void Calibration::ir2Values(const std_msgs::Float32 sensor)
 
 }
 
+void Calibration::motorValues(const std_msgs::Int32 sensor)
+{
+	if (!motorRevolutionsSet)
+	{
+		motorRevolutionsStart = sensor.data;
+		ROS_INFO("[CAL]: motorRevolutionsStart: %d", motorRevolutionsStart);
+		motorRevolutionsSet = true;
+	}
+
+	motorRevolutions = sensor.data;
+}
+
 void Calibration::init()
 {
 	anglePub = n.advertise<std_msgs::Int8>("angle_cmd", 1);
@@ -151,6 +167,9 @@ void Calibration::init()
 			&Calibration::ir1Values, this);
 	sensor_ir2_Subscriber = n.subscribe("/sensor_IR2", 1,
 			&Calibration::ir2Values, this);
+
+	sensor_motor_revolutions_Subscriber = n.subscribe("/sensor_motor_revolutions", 1,
+			&Calibration::motorValues, this);
 
 	ros::Duration(1).sleep();
 }
@@ -223,7 +242,7 @@ int main(int argc, char** argv)
 		if (cal.driveEnable)
 		{
 			data.angle.data = STRAIGHTFORWARD;
-			data.speed.data = 10;
+			data.speed.data = 8;
 		}
 		else
 		{

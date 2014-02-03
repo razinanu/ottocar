@@ -15,6 +15,8 @@ Parking::Parking() :
 	intoGapSpeed = 0;
 	distanceBack = -1;
 	distanceSide = -1;
+
+	motorRevolutions = 0;
 }
 
 Parking::~Parking()
@@ -58,9 +60,9 @@ void Parking::scanValues(sensor_msgs::LaserScan laser)
 //		DriveIntoGap::twoInts twoInts = driveIntoGap.drive(laser, BESTGAPLENGTH, distanceBack, distanceSide);
 //		intoGapAngle = twoInts.angle;
 //		intoGapSpeed = twoInts.speed;
-
-		g_laser = laser;
 	}
+
+	g_laser = laser;
 
 }
 
@@ -128,6 +130,11 @@ void Parking::voltageValues(std_msgs::Float32 msg)
 	//todo Klasse Ringpuffer schreiben
 }
 
+void Parking::motorValues(const std_msgs::Int32 sensor)
+{
+	motorRevolutions = sensor.data;
+}
+
 void Parking::init()
 {
 	angle_pub = parkingNode.advertise<std_msgs::Int8>("angle_cmd", 1);
@@ -140,6 +147,8 @@ void Parking::init()
 			&Parking::ir2Values, this);
 	sensor_voltage = parkingNode.subscribe("/sensor_voltage", 1,
 			&Parking::voltageValues, this);
+	sensor_motor_revolutions_Subscriber = parkingNode.subscribe(
+			"/sensor_motor_revolutions", 1, &Parking::motorValues, this);
 
 	ros::Duration(1).sleep();
 }
@@ -161,6 +170,8 @@ int main(int argc, char** argv)
 		ROS_ERROR("Unknown Error\n\r");
 		return -1;
 	}
+
+	ros::spinOnce();
 
 	MoveToGap::driveData data;
 	MoveToGap driver;
@@ -188,7 +199,9 @@ int main(int argc, char** argv)
 			//
 			if (park.parallel.driveEnable())
 			{
-				data = driver.moveToGap(park.distanceSide, park.distanceBack, park.gapcal.getGapDistance(), park.voltage);
+				data = driver.moveToGap(park.g_laser, park.distanceSide,
+						park.distanceBack, park.gapcal.getGapDistance(),
+						park.voltage, park.motorRevolutions);
 
 				if (data.speed.data == 0)
 				{
@@ -203,9 +216,11 @@ int main(int argc, char** argv)
 			park.speed_pub.publish(data.speed);
 		}
 		//drive into the gap
-		else if(park.ParkingController_)
+		else if (park.ParkingController_)
 		{
-			DriveIntoGap::twoInts twoInts = park.driveIntoGap.drive(park.g_laser, BESTGAPLENGTH, park.distanceBack, park.distanceSide,0, park.voltage);
+			DriveIntoGap::twoInts twoInts = park.driveIntoGap.drive(
+					park.g_laser, BESTGAPLENGTH, park.distanceBack,
+					park.distanceSide, park.motorRevolutions, park.voltage);
 			park.intoGapAngle = twoInts.angle;
 			park.intoGapSpeed = twoInts.speed;
 
