@@ -10,7 +10,6 @@
 
 #include "ros/ros.h"
 #include "sensor_msgs/LaserScan.h"
-#include "ParkingController.h"
 #include "std_msgs/Float32.h"
 
 class DriveIntoGap

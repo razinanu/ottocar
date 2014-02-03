@@ -241,7 +241,7 @@ DriveIntoGap::twoInts DriveIntoGap::forwards(const sensor_msgs::LaserScan laser)
 		ROS_WARN("[DIG]: nach vorne gefahren: timeOut");
 		lastTime = ros::Time::now();
 		mode = 11;
-		break;
+		return ti;
 	}
 
 	for (int i = 255 - 50; i <= 255 + 150; i++)
@@ -255,7 +255,6 @@ DriveIntoGap::twoInts DriveIntoGap::forwards(const sensor_msgs::LaserScan laser)
 		}
 	}
 
-	twoInts ti;
 	ti.angle = RIGHT_MAX;
 	ti.speed = SPEED;
 
