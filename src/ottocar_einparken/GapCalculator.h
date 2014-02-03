@@ -11,6 +11,7 @@
 #include "std_msgs/String.h"
 #include "sensor_msgs/LaserScan.h"
 using namespace std;
+
 enum laserState
 {
 	start,
@@ -19,15 +20,20 @@ enum laserState
 	calculateMinPoint,
 	end
 };
+
 class GapCalculator
 {
 private:
 
-	float distanceHorizontal, baseDistance, baseVDistance, secondHDistance,
-			secondVDistance, space, baseHDistance, angle, minVDistance,
+	float baseVDistance, secondHDistance,
+			space, baseHDistance, angle, minVDistance,
 			HDistance, gapDistance;
 	double Pi;
 
+	laserState isBaseRange(laserState currentSearchState);
+	laserState calculateBase(laserState currentSearchState, const sensor_msgs::LaserScan laser, int index);
+	laserState calculateMax(laserState currentSearchState, const sensor_msgs::LaserScan laser, int index);
+	bool calculateMin(const sensor_msgs::LaserScan laser, int index);
 
 public:
 	GapCalculator();
