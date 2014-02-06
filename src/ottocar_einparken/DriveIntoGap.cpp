@@ -41,6 +41,8 @@ DriveIntoGap::twoInts DriveIntoGap::drive(sensor_msgs::LaserScan laser,
 	//enoughSpaceOnTheFront();
 
 	twoInts speedAndAngle; //[1]angle, [0]speed
+	speedAndAngle.angle = STRAIGHTFORWARD;
+	speedAndAngle.speed = 0;
 
 	//licht START
 	switch (mode)
@@ -73,7 +75,7 @@ DriveIntoGap::twoInts DriveIntoGap::drive(sensor_msgs::LaserScan laser,
 		//60 cm
 		if (gapSize == (float) 0.6)
 		{
-			if (drivenM(odometry) > 0.5)
+			if (drivenM(odometry) > 0.45)
 			{
 				ROS_INFO("[DIG]: 1. Teil Rueckwaerts: %2.4f", drivenM(odometry));
 				lastTime = ros::Time::now();
@@ -130,7 +132,7 @@ DriveIntoGap::twoInts DriveIntoGap::drive(sensor_msgs::LaserScan laser,
 	//rückwärts in die Parklücke einfahren 2. Teil mit timeout
 	case 7:
 	{
-		if (distanceBack < 0.10 || (lastTime + ros::Duration(3)) < ros::Time::now())
+		if (distanceBack < 0.12 || (lastTime + ros::Duration(3)) < ros::Time::now())
 		{
 			ROS_INFO("[DIG]: in die Luecke gefahren: %2.4f", distanceBack);
 			ROS_INFO("[DIG]: --> gefahrene Strecke: %2.4f", drivenM(odometry));
@@ -138,7 +140,7 @@ DriveIntoGap::twoInts DriveIntoGap::drive(sensor_msgs::LaserScan laser,
 			mode = 8;
 		}
 
-		ROS_INFO("[DIG]: distanceBack: %2.4f", distanceBack);
+//		ROS_INFO("[DIG]: distanceBack: %2.4f", distanceBack);
 
 		speedAndAngle.angle = LEFT_MAX;
 		speedAndAngle.speed = - SPEED;
@@ -183,7 +185,7 @@ DriveIntoGap::twoInts DriveIntoGap::drive(sensor_msgs::LaserScan laser,
 
 		for (int i = 255 - 50; i <= 255 + 150; i++)
 		{
-			if (laser.ranges[i] < 0.17)
+			if (laser.ranges[i] < 0.10)
 			{
 				ROS_INFO("[DIG]: nach vorne gefahren: %2.4f | i: %d", laser.ranges[i], i);
 				lastTime = ros::Time::now();

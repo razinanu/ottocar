@@ -17,11 +17,15 @@ Parking::Parking() :
 	distanceSide = -1;
 
 	motorRevolutions = 0;
+
+	bufferBack = new RingBuffer();
+	bufferSide = new RingBuffer();
 }
 
 Parking::~Parking()
 {
-	// TODO Auto-generated destructor stub
+	bufferBack->~RingBuffer();
+	bufferSide->~RingBuffer();
 }
 
 void Parking::scanValues(sensor_msgs::LaserScan laser)
@@ -68,14 +72,25 @@ void Parking::scanValues(sensor_msgs::LaserScan laser)
 
 float Parking::linearizeBack(float value)
 {
-	if (value > 0.1)
+	float result = 0.1194 / (value + 0.028);
+
+	if (result > 0 && result <= 0.4)
 	{
-		return 0.1194 / (value + 0.028);
+		return result;
 	}
 	else
 	{
 		return 0.4;
 	}
+
+//	if (value > 0.1)
+//	{
+//		return 0.1194 / (value + 0.028);
+//	}
+//	else
+//	{
+//		return 0.4;
+//	}
 
 	//diese Berechnung hat einen Sprung zwischen 10 und 15cm
 //	float error = 40.0;
@@ -102,26 +117,37 @@ float Parking::linearizeBack(float value)
 
 float Parking::linearizeSide(float value)
 {
-	if (value > 0.1)
+	float result = 0.1128 / (value - 0.124);
+
+	if (result > 0 && result <= 0.4)
 	{
-		return 0.1128 / (value - 0.124);
+		return result;
 	}
 	else
 	{
 		return 0.4;
 	}
+
+//	if (value > 0.1)
+//	{
+//		return 0.1128 / (value - 0.124);
+//	}
+//	else
+//	{
+//		return 0.4;
+//	}
 }
 
 void Parking::ir1Values(std_msgs::Float32 sensor)
 {
-	this->distanceBack = linearizeBack(sensor.data);
-//	ROS_INFO("[PAR]: IR1: (V,%f) and (D,%f)", sensor.data, distanceBack);
+//	this->distanceBack = linearizeBack(sensor.data);
+	bufferSide->insert(linearizeBack(sensor.data));
 }
 
 void Parking::ir2Values(const std_msgs::Float32 sensor)
 {
-	this->distanceSide = linearizeSide(sensor.data);
-//	ROS_INFO("[PAR]: IR2: (V,%f) and (D,%f)", sensor.data, distanceSide);
+//	this->distanceSide = linearizeSide(sensor.data);
+	bufferBack->insert(linearizeSide(sensor.data));
 }
 
 void Parking::voltageValues(std_msgs::Float32 msg)
@@ -199,8 +225,8 @@ int main(int argc, char** argv)
 			//
 			if (park.parallel.driveEnable())
 			{
-				data = driver.moveToGap(park.g_laser, park.distanceSide,
-						park.distanceBack, park.gapcal.getGapDistance(),
+				data = driver.moveToGap(park.g_laser, park.bufferSide->getMedian(),
+						park.bufferBack->getMedian(), park.gapcal.getGapDistance(),
 						park.voltage, park.motorRevolutions);
 
 				if (data.speed.data == 0)
@@ -219,8 +245,8 @@ int main(int argc, char** argv)
 		else if (park.ParkingController_)
 		{
 			DriveIntoGap::twoInts twoInts = park.driveIntoGap.drive(
-					park.g_laser, BESTGAPLENGTH, park.distanceBack,
-					park.distanceSide, park.motorRevolutions, park.voltage);
+					park.g_laser, BESTGAPLENGTH, park.bufferBack->getMedian(),
+					park.bufferSide->getMedian(), park.motorRevolutions, park.voltage);
 			park.intoGapAngle = twoInts.angle;
 			park.intoGapSpeed = twoInts.speed;
 

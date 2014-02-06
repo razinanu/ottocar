@@ -40,6 +40,7 @@ private:
 
 	int lastOdometry;
 	float drivenM(int odometry);
+
 };
 
 #endif /* MOVETOGAP_H_ */

@@ -23,12 +23,13 @@ const float FIRSTDISTANCE = 0.2;
 const float BESTGAPLENGTH=0.6;
 
 //Lenkwerte
-const int STRAIGHTFORWARD =  2;
+const int STRAIGHTFORWARD =  7;
 const int LEFT_MAX = -127;
 const int RIGHT_MAX = 126;
 
 //Fahrwerte
-const float REVOLUTIONS_PER_M = 1404.8;
+//const float REVOLUTIONS_PER_M = 1404.8;	//Laborfußboden
+const float REVOLUTIONS_PER_M = 4500.0;		//Folie
 
 /*
  * ParallelController

@@ -55,7 +55,7 @@ MoveToGap::driveData MoveToGap::moveToGap(sensor_msgs::LaserScan laser,
 		//bis zur Mitte der Luecke fahren
 	case 1:
 	{
-		if (drivenM(odometry) > distanceToDrive - 0.2)
+		if (drivenM(odometry) > distanceToDrive - 0.1)
 		{
 			if (dataIRside > 0.2)
 				ROS_INFO(
@@ -83,7 +83,7 @@ MoveToGap::driveData MoveToGap::moveToGap(sensor_msgs::LaserScan laser,
 		//x cm hinter der Luecke anhalten
 	case 3:
 	{
-		if (drivenM(odometry) > 0.22)
+		if (drivenM(odometry) > 0.20)
 		{
 			ROS_INFO("[MTG]: hinter der Luecke angehalten: %2.4f",drivenM(odometry));
 			result.speed.data = 0;
