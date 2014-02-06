@@ -34,12 +34,17 @@ private:
 	ros::Time gapBegin;
 	ros::Time distanceFound;
 	ros::Time lastTime;
-	float timeToDrive;
 	int mode;
 	float distanceToDrive;
 
 	int lastOdometry;
 	float drivenM(int odometry);
+
+	void waitForDistance(float, int);
+	void driveFirstHalf(int, float);
+	void driveSecondHalf(float, int);
+	int positioning(int, int);
+
 
 };
 

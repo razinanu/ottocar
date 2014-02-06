@@ -15,11 +15,7 @@ enum laserState
 {
 	start, calculateBaseRange, calculateMaxPoint, calculateMinPoint, end
 };
-//enum GAPIS
-//{
-//	smallGap, mediumGap, largGap,
-//
-//};
+
 /**\brief
  * To detect the Gap, at first searching the first corner of Obstacle, which has
  * distance smaller than FIRSTDISTANCE to laser scanner. Save his horizontal and vertical distance to
@@ -28,14 +24,12 @@ enum laserState
  * distance, if it lies in the interval MINDISTANCE, accept it and calculate the difference of his vertical and base vestcal
  * distance to determine length of gap.
  **/
-
 class GapCalculator
 {
 private:
 
-	double distanceHorizontal, baseDistance, baseVDistance, secondHDistance,
-			secondVDistance, space, baseHDistance, angle, minVDistance,
-			HDistance, gapDistance, baseRange;
+	double baseVDistance, secondHDistance, space, baseHDistance,
+			baseRange, angle, minVDistance, HDistance, gapDistance;
 	double Pi;
 
 	bool parkEnable;
@@ -49,6 +43,11 @@ private:
 	void calculateAverageValue(const sensor_msgs::LaserScan laser, int i);
 
 	bool testGap(double space);
+
+	laserState startState(laserState);
+	laserState calculateBase(laserState, const sensor_msgs::LaserScan, int);
+	laserState calculateMax(laserState, const sensor_msgs::LaserScan, int);
+	laserState calculateMin(laserState, const sensor_msgs::LaserScan, int);
 
 public:
 	GapCalculator();
