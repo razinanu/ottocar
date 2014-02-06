@@ -32,9 +32,12 @@ const bool SEQUENCEPARK = true;
 const bool FIRSTPARK=true;
 
 //Lenkwerte
-const int STRAIGHTFORWARD = 0;
+const int STRAIGHTFORWARD =  2;
 const int LEFT_MAX = -127;
 const int RIGHT_MAX = 126;
+
+//Fahrwerte
+const float REVOLUTIONS_PER_M = 1404.8;
 
 /*
  * ParallelController
