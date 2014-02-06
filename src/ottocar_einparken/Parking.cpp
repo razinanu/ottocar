@@ -8,7 +8,8 @@
 #include "Parking.h"
 
 Parking::Parking() :
-		GapCalculator_(true), ParallelController_(true), ParkingController_(false)
+		GapCalculator_(true), ParallelController_(true), PositionController_(
+				true), ParkingController_(false)
 {
 	intoGapAngle = 0;
 	intoGapSpeed = 0;
@@ -16,12 +17,15 @@ Parking::Parking() :
 	distanceSide = -1;
 
 	motorRevolutions = 0;
-	voltage = 0;
+
+	bufferBack = new RingBuffer();
+	bufferSide = new RingBuffer();
 }
 
 Parking::~Parking()
 {
-	// TODO Auto-generated destructor stub
+	bufferBack->~RingBuffer();
+	bufferSide->~RingBuffer();
 }
 
 void Parking::scanValues(sensor_msgs::LaserScan laser)
@@ -46,6 +50,21 @@ void Parking::scanValues(sensor_msgs::LaserScan laser)
 	{
 		parallel.laserScanParallel(laser);
 	}
+	//Whether the car is at correct Position to park.
+	//in case that car is at correct Position, PrkingController must be set to true
+	if (PositionController_)
+	{
+		position.LaserScanPosition(laser);
+	}
+	//ParkingController set to true, if the car is at correct position to park
+//	ParkingController_ = true;
+	if (ParkingController_)
+	{
+//		float size = 60.0;
+//		DriveIntoGap::twoInts twoInts = driveIntoGap.drive(laser, BESTGAPLENGTH, distanceBack, distanceSide);
+//		intoGapAngle = twoInts.angle;
+//		intoGapSpeed = twoInts.speed;
+	}
 
 	g_laser = laser;
 
@@ -53,38 +72,82 @@ void Parking::scanValues(sensor_msgs::LaserScan laser)
 
 float Parking::linearizeBack(float value)
 {
-	if (value > 0.1)
+	float result = 0.1194 / (value + 0.028);
+
+	if (result > 0 && result <= 0.4)
 	{
-		return 0.1194 / (value + 0.028);
+		return result;
 	}
 	else
 	{
 		return 0.4;
 	}
+
+//	if (value > 0.1)
+//	{
+//		return 0.1194 / (value + 0.028);
+//	}
+//	else
+//	{
+//		return 0.4;
+//	}
+
+	//diese Berechnung hat einen Sprung zwischen 10 und 15cm
+//	float error = 40.0;
+//
+//// drei geraden zur annaeherung an die funktion
+//	if (value > 1.25 && value < 4.0)
+//	{
+//		return (1 / (-1.45 / 6)) * value + (432 / 29);
+//	}
+//	else if (value > 0.8)
+//	{
+//		return (1 / (-1.45 / 6)) * value + (432 / 29);
+//	}
+//	else if (value > 0.3)
+//	{
+//		return (1 / (-0.075)) * value + (80 / 3);
+//	}
+//	else
+//	{
+////		ROS_INFO("[PAR]: linearlize of %f", value);
+//		return error;
+//	}
 }
 
 float Parking::linearizeSide(float value)
 {
-	if (value > 0.1)
+	float result = 0.1128 / (value - 0.124);
+
+	if (result > 0 && result <= 0.4)
 	{
-		return 0.1128 / (value - 0.124);
+		return result;
 	}
 	else
 	{
 		return 0.4;
 	}
+
+//	if (value > 0.1)
+//	{
+//		return 0.1128 / (value - 0.124);
+//	}
+//	else
+//	{
+//		return 0.4;
+//	}
 }
 
 void Parking::ir1Values(std_msgs::Float32 sensor)
 {
-	this->distanceBack = linearizeBack(sensor.data);
-//	ROS_INFO("[PAR]: IR1: (V,%f) and (D,%f)", sensor.data, distanceBack);
+//	this->distanceBack = linearizeBack(sensor.data);
+	bufferSide->insert(linearizeBack(sensor.data));
 }
 
 void Parking::ir2Values(const std_msgs::Float32 sensor)
 {
-	this->distanceSide = linearizeSide(sensor.data);
-//	ROS_INFO("[PAR]: IR2: (V,%f) and (D,%f)", sensor.data, distanceSide);
+//	this->distanceSide = linearizeSide(sensor.data);
+	bufferBack->insert(linearizeSide(sensor.data));
 }
 
 void Parking::voltageValues(std_msgs::Float32 msg)
@@ -116,30 +179,29 @@ void Parking::init()
 	ros::Duration(1).sleep();
 }
 
-
-int init(Parking park)
+int main(int argc, char** argv)
 {
+	ros::init(argc, argv, "parking");
+
+	Parking park;
 	try
 	{
 		park.init();
-	}
-	catch (std::exception& error)
+	} catch (std::exception& error)
 	{
 		ROS_ERROR("Error: %s\n", error.what());
 		return -1;
-	}
-	catch (...)
+	} catch (...)
 	{
 		ROS_ERROR("Unknown Error\n\r");
 		return -1;
 	}
 
 	ros::spinOnce();
-	return 0;
-}
 
-void shake(Parking park, MoveToGap::driveData data)
-{
+	MoveToGap::driveData data;
+	MoveToGap driver;
+
 	data.angle.data = 0;
 	park.angle_pub.publish(data.angle);
 	ros::Duration(0.4).sleep();
@@ -153,78 +215,49 @@ void shake(Parking park, MoveToGap::driveData data)
 	ros::Duration(0.4).sleep();
 
 	ROS_INFO("[PAR]: Parking gestartet");
-}
-
-void driveToGap(Parking park, MoveToGap::driveData data, MoveToGap driver)
-{
-	if (park.parallel.driveEnable())
-	{
-		data = driver.moveToGap(park.g_laser, park.distanceSide,
-				park.distanceBack, park.gapcal.getGapDistance(),
-				park.voltage, park.motorRevolutions);
-
-		if (data.speed.data == 0)
-		{
-			park.ParkingController_ = true;
-		}
-	}
-	else
-	{
-		data.speed.data = 0;
-	}
-	park.angle_pub.publish(data.angle);
-	park.speed_pub.publish(data.speed);
-}
-
-void driveIntoGap(Parking park)
-{
-	DriveIntoGap::twoInts twoInts = park.driveIntoGap.drive(
-			park.g_laser, BESTGAPLENGTH, park.distanceBack,
-			park.distanceSide, park.motorRevolutions, park.voltage);
-	park.intoGapAngle = twoInts.angle;
-	park.intoGapSpeed = twoInts.speed;
-
-	std_msgs::Int8 angle;
-	angle.data = park.intoGapAngle;
-
-	std_msgs::Int8 speed;
-	speed.data = park.intoGapSpeed;
-
-	park.angle_pub.publish(angle);
-	park.speed_pub.publish(speed);
-}
-
-int main(int argc, char** argv)
-{
-	ros::init(argc, argv, "parking");
-
-	//-- initialisiere die Kommunikationsstruktur von Parking
-
-	Parking park;
-	if(init(park) == -1)
-		return -1;
-
-	ros::spinOnce();
-
-	//-- zittere ein wenig mit den Rädern, um den Start anzuzeigen
-
-	MoveToGap::driveData data;
-	MoveToGap driver;
-
-	shake(park, data);
-
-	//-- die eigentliche Handlung:
 
 	ros::Rate loop_rate(LOOP_RATE);
 	while (ros::ok)
 	{
+		//move to the gap
 		if (!park.ParkingController_)
 		{
-			driveToGap(park, data, driver);
+			//
+			if (park.parallel.driveEnable())
+			{
+				data = driver.moveToGap(park.g_laser, park.bufferSide->getMedian(),
+						park.bufferBack->getMedian(), park.gapcal.getGapDistance(),
+						park.voltage, park.motorRevolutions);
+
+				if (data.speed.data == 0)
+				{
+					park.ParkingController_ = true;
+				}
+			}
+			else
+			{
+				data.speed.data = 0;
+			}
+			park.angle_pub.publish(data.angle);
+			park.speed_pub.publish(data.speed);
 		}
+		//drive into the gap
 		else if (park.ParkingController_)
 		{
-			driveIntoGap(park);
+			DriveIntoGap::twoInts twoInts = park.driveIntoGap.drive(
+					park.g_laser, BESTGAPLENGTH, park.bufferBack->getMedian(),
+					park.bufferSide->getMedian(), park.motorRevolutions, park.voltage);
+			park.intoGapAngle = twoInts.angle;
+			park.intoGapSpeed = twoInts.speed;
+
+			std_msgs::Int8 angle;
+			angle.data = park.intoGapAngle;
+
+			std_msgs::Int8 speed;
+			speed.data = park.intoGapSpeed;
+
+			park.angle_pub.publish(angle);
+			park.speed_pub.publish(speed);
 		}
 
 		ros::spinOnce();

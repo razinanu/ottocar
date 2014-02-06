@@ -16,11 +16,12 @@ Calibration::Calibration()
 	bufferPointer = 0;
 	motorRevolutions = 0;
 	motorRevolutionsSet = false;
+	bufferBack = new RingBuffer();
 }
 
 Calibration::~Calibration()
 {
-	// TODO Auto-generated destructor stub
+	bufferBack->~RingBuffer();
 }
 
 void Calibration::scanValues(sensor_msgs::LaserScan laser)
@@ -35,11 +36,11 @@ void Calibration::scanValues(sensor_msgs::LaserScan laser)
 		driveEnable = true;
 	}
 
-	if (abs (abs(motorRevolutions) - abs(motorRevolutionsStart)) > 3200)
-	{
-		driveEnable = false;
-		ROS_INFO("[CAL]: motorRevolutions: %d", abs (abs(motorRevolutions) - abs(motorRevolutionsStart)));
-	}
+//	if (abs (abs(motorRevolutions) - abs(motorRevolutionsStart)) > 1000)
+//	{
+//		driveEnable = false;
+//		ROS_INFO("[CAL]: motorRevolutions: %d", abs (abs(motorRevolutions) - abs(motorRevolutionsStart)));
+//	}
 
 	//Zeitmessung
 	switch (status)
@@ -56,9 +57,10 @@ void Calibration::scanValues(sensor_msgs::LaserScan laser)
 		if (laser.ranges[laser.ranges.size() - 1] > 0.3)
 		{
 			ROS_INFO("[CAL]: Messung start");
+			ROS_INFO("[CAL]: motorRevolutionsStart: %d", motorRevolutions);
 			status = 2;
 			start = ros::Time::now();
-			motorRevolutionsStart = motorRevolutions;
+//			motorRevolutionsStart = motorRevolutions;
 		}
 		break;
 	//zwischen dem 1. und 2. Karton
@@ -68,12 +70,13 @@ void Calibration::scanValues(sensor_msgs::LaserScan laser)
 			ROS_INFO("[CAL]: Voltage: %2.8f", getAverage());
 			cout << "[ INFO] [-#-#-#-#-#.-#-#-#-#-]: [CAL]: Fahrzeit: " << (ros::Time::now() - start) << endl;
 			ROS_INFO("[CAL]: motorRevolutions: %d", abs (abs(motorRevolutions) - abs(motorRevolutionsStart)));
+			ROS_INFO("[CAL]: motorRevolutionEnd: %d ", motorRevolutions);
 			status = 3;
 		}
 		break;
 
 	default:
-		driveEnable = false;
+//		driveEnable = false;
 		break;
 	}
 }
@@ -134,7 +137,14 @@ float Calibration::linearizeSide(float value)
 void Calibration::ir1Values(std_msgs::Float32 sensor)
 {
 	this->distanceBack = linearizeBack(sensor.data);
+	bufferBack->insert(distanceBack);
 
+//	if (bufferBack->getMedian() > 0.12)
+//		ROS_INFO("distanceBack: %2.8f", bufferBack->getMedian());
+//	else if (bufferBack->getMedian() > 0.1)
+//		ROS_WARN("distanceBack: %2.8f", bufferBack->getMedian());
+//	else
+//		ROS_ERROR("distanceBack: %2.8f", bufferBack->getMedian());
 }
 
 void Calibration::ir2Values(const std_msgs::Float32 sensor)
@@ -217,7 +227,7 @@ int main(int argc, char** argv)
 	}
 
 	MoveToGap::driveData data;
-	ros::Rate loop_rate(LOOP_RATE);
+	ros::Rate loop_rate(100);//LOOP_RATE);
 
 	data.angle.data = 0;
 	cal.anglePub.publish(data.angle);
@@ -237,15 +247,15 @@ int main(int argc, char** argv)
 	{
 
 //		ROS_INFO("[CAL]: distanceBack: %2.4f ",cal.distanceBack);
-//		ROS_INFO("[CAL]: distanceSide: %2.4f ",cal.distanceSide);
 
-		if (cal.driveEnable)
+		if (!cal.motorRevolutionsSet || abs((cal.motorRevolutions) - (cal.motorRevolutionsStart)) < 5000) //(cal.driveEnable)
 		{
 			data.angle.data = STRAIGHTFORWARD;
-			data.speed.data = 8;
+			data.speed.data = 10;
 		}
 		else
 		{
+			ROS_INFO("current: %i, start: %i, difference: %i", cal.motorRevolutions, cal.motorRevolutionsStart, abs((cal.motorRevolutions) - (cal.motorRevolutionsStart)));
 			data.angle.data = STRAIGHTFORWARD;
 			data.speed.data = 0;
 		}

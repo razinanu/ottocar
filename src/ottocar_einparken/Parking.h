@@ -24,6 +24,8 @@
 #include "DriveIntoGap.h"
 #include "MoveToGap.h"
 
+#include "RingBuffer.h"
+
 class Parking
 {
 
@@ -64,6 +66,8 @@ public:
 	sensor_msgs::LaserScan g_laser;
 
 	int motorRevolutions;
+	RingBuffer* bufferBack;
+	RingBuffer* bufferSide;
 
 };
 

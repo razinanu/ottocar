@@ -16,6 +16,7 @@
 #include "std_msgs/Float32.h"
 #include "MoveToGap.h"
 #include "Parking.h"
+#include "RingBuffer.h"
 
 class Calibration
 {
@@ -64,6 +65,10 @@ public:
 	ros::Subscriber sensor_ir2_Subscriber;
 
 	ros::Subscriber sensor_motor_revolutions_Subscriber;
+
+private:
+
+	RingBuffer* bufferBack;
 };
 
 #endif /* CALIBRATION_H_ */

@@ -14,7 +14,6 @@ MoveToGap::MoveToGap()
 	gapBegin = ros::Time::now() - ros::Duration(2);
 	mode = 0;
 	lastOdometry = 0;
-	distanceToDrive = -1;
 }
 
 MoveToGap::~MoveToGap()
@@ -36,76 +35,70 @@ MoveToGap::driveData MoveToGap::moveToGap(sensor_msgs::LaserScan laser,
 	result.angle.data = STRAIGHTFORWARD;
 	result.speed.data = 8;	//todo 8
 
+//	ROS_INFO("distanceTOGap: %2.4f | IR: %2.4f", distanceToGap, dataIRside);
+
 	switch (mode)
 	{
+		//auf eine Entfernung zur Luecke warten
 	case 0:
-		waitForDistance(distanceToGap, dataIRside, odometry);
+	{
+		if (distanceToGap > 0 && distanceToGap < 1.0) //todo ab wann den Wert akzeptieren?
+		{
+			ROS_INFO(
+					"[MTG]: distanceTOGap: %2.4f | IR: %2.4f", distanceToGap, dataIRside);
+			distanceToDrive = distanceToGap;
+			lastOdometry = odometry;
+			mode = 1;
+		}
 		break;
-
+	}
+		//bis zur Mitte der Luecke fahren
 	case 1:
-		driveFirstHalf(dataIRside, odometry);
-		break;
+	{
+		if (drivenM(odometry) > distanceToDrive - 0.1)
+		{
+			if (dataIRside > 0.2)
+				ROS_INFO(
+						"[MTG]: In der Mitte neben der Luecke: %2.2f", dataIRside);
+			else
+				ROS_WARN(
+						"[MTG]: In der Mitte neben der Luecke: %2.2f", dataIRside);
 
+			mode = 2;
+		}
+		break;
+	}
+		//auf das Ende der Luecke warten, bis der  IR-Sensor den Karton sieht
 	case 2:
-		driveSecondHalf(dataIRside, odometry);
+	{
+		if (dataIRside < 0.2)
+//		if (laser.ranges[511] < 0.25)
+		{
+			gapBegin = ros::Time::now();
+			lastOdometry = odometry;
+			mode = 3;
+		}
 		break;
-
-	case 3:
+	}
 		//x cm hinter der Luecke anhalten
-		if (drivenM(odometry) > 0.22)
+	case 3:
+	{
+		if (drivenM(odometry) > 0.20)
 		{
 			ROS_INFO("[MTG]: hinter der Luecke angehalten: %2.4f",drivenM(odometry));
 			result.speed.data = 0;
 			mode = 4;
 		}
 		break;
-
-	default:
+	}
 		//fertig
+	default:
+	{
 		result.angle.data = STRAIGHTFORWARD;
 		result.speed.data = 0;
 		break;
 	}
+	}
 
 	return result;
 }
-
-//auf eine Entfernung zur Luecke warten
-void MoveToGap::waitForDistance(float distanceToGap, float dataIRside, int odometry)
-{
-	if (distanceToGap > 0 && distanceToGap < 1.0) //todo ab wann den Wert akzeptieren?
-	{
-		ROS_INFO("[MTG]: distanceTOGap: %2.4f | IR: %2.4f", distanceToGap, dataIRside);
-		distanceToDrive = distanceToGap;
-		lastOdometry = odometry;
-		mode = 1;
-	}
-}
-
-//bis zur Mitte der Luecke fahren
-void MoveToGap::driveFirstHalf(float dataIRside, int odometry)
-{
-	if (distanceToDrive != -1 && drivenM(odometry) > distanceToDrive - 0.2)
-	{
-		if (dataIRside > 0.2)
-			ROS_INFO(
-					"[MTG]: In der Mitte neben der Luecke: %2.2f", dataIRside);
-		else
-			ROS_WARN(
-					"[MTG]: In der Mitte neben der Luecke: %2.2f", dataIRside);
-
-		mode = 2;
-	}
-}
-
-//auf das Ende der Luecke warten, bis der  IR-Sensor den Karton sieht
-void MoveToGap::driveSecondHalf(float dataIRside, int odometry)
-{
-	if (dataIRside < 0.2)		//	if (laser.ranges[511] < 0.25)
-	{
-		gapBegin = ros::Time::now();
-		lastOdometry = odometry;
-		mode = 3;
-	}
-}
-
