@@ -16,6 +16,7 @@ Parking::Parking() :
 	distanceSide = -1;
 
 	motorRevolutions = 0;
+	voltage = 0;
 }
 
 Parking::~Parking()
