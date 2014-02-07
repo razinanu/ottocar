@@ -8,7 +8,8 @@
 #include "Parking.h"
 
 Parking::Parking() :
-		GapCalculator_(true), ParallelController_(true), ParkingController_(false)
+		GapCalculator_(true), ParallelController_(true), ParkingController_(
+				false)
 {
 	intoGapAngle = 0;
 	intoGapSpeed = 0;
@@ -122,6 +123,8 @@ void Parking::init()
 {
 	angle_pub = parkingNode.advertise<std_msgs::Int8>("angle_cmd", 1);
 	speed_pub = parkingNode.advertise<std_msgs::Int8>("speed_cmd", 1);
+	led_pub = parkingNode.advertise<std_msgs::UInt8>("led_set", 5);
+
 	hokuyoSubscriber = parkingNode.subscribe("/scan", 1, &Parking::scanValues,
 			this);
 	sensor_ir1_Subscriber = parkingNode.subscribe("/sensor_IR1", 1,
@@ -134,6 +137,49 @@ void Parking::init()
 			"/sensor_motor_revolutions", 1, &Parking::motorValues, this);
 
 	ros::Duration(1).sleep();
+}
+
+void Parking::finishedParkLed()
+{
+	// TODO soll dreimal blinken und dann aufhoeren
+	// anschalten
+	if ((lastTime + ros::Duration(0.5)) < ros::Time::now())
+	{
+		msg_led.data = 100; // vorne rechts
+		led_pub.publish(msg_led);
+		msg_led.data = 107; // hinten rechts
+		led_pub.publish(msg_led);
+		msg_led.data = 103; // vorne links
+		led_pub.publish(msg_led);
+		msg_led.data = 104; // hinten links
+		led_pub.publish(msg_led);
+	}
+
+	if ((lastTime + ros::Duration(1.0)) < ros::Time::now())
+	{
+		ROS_INFO("[PAR]: aus!");
+		msg_led.data = 0; // vorne rechts
+		led_pub.publish(msg_led);
+		msg_led.data = 7; // hinten rechts
+		led_pub.publish(msg_led);
+		msg_led.data = 3; // vorne links
+		led_pub.publish(msg_led);
+		msg_led.data = 4; // hinten links
+		led_pub.publish(msg_led);
+		lastTime = ros::Time::now();
+
+		count++;
+	}
+}
+
+// alle Lichter ausschalten
+void Parking::allLightsOff()
+{
+	for (int i = 0; i < 10; ++i)
+	{
+		msg_led.data = i; // vorne rechts
+		led_pub.publish(msg_led);
+	}
 }
 
 int main(int argc, char** argv)
@@ -174,12 +220,16 @@ int main(int argc, char** argv)
 	ROS_INFO("[PAR]: Parking gestartet");
 
 	ros::Rate loop_rate(LOOP_RATE);
+
+	park.allLightsOff(); // TODO auskommentieren
+	park.lastTime = ros::Time::now();
+	park.count = 0;
+
 	while (ros::ok)
 	{
-//move to the gap
+		//move to the gap
 		if (!park.ParkingController_)
 		{
-//
 			if (park.parallel.driveEnable())
 			{
 				data = driver.moveToGap(park.g_laser,
@@ -200,13 +250,13 @@ int main(int argc, char** argv)
 			park.angle_pub.publish(data.angle);
 			park.speed_pub.publish(data.speed);
 		}
-//drive into the gap
+		//drive into the gap
 		else if (park.ParkingController_)
 		{
 			DriveIntoGap::twoInts twoInts = park.driveIntoGap.drive(
-					park.g_laser, park.gapcal.gapIs, park.bufferBack->getMedian(),
-					park.bufferSide->getMedian(), park.motorRevolutions,
-					park.voltage);
+					park.g_laser, park.gapcal.gapIs,
+					park.bufferBack->getMedian(), park.bufferSide->getMedian(),
+					park.motorRevolutions, park.voltage);
 			park.intoGapAngle = twoInts.angle;
 			park.intoGapSpeed = twoInts.speed;
 
@@ -218,6 +268,15 @@ int main(int argc, char** argv)
 
 			park.angle_pub.publish(angle);
 			park.speed_pub.publish(speed);
+
+			// 3-maliges Blinken - Parken fertig!
+			if (park.intoGapSpeed == 0) // todo test
+			{
+				if (park.count < 3)
+				{
+					park.finishedParkLed();
+				}
+			}
 		}
 
 		ros::spinOnce();
