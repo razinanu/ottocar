@@ -12,6 +12,9 @@
 #include "ParallelController.h"
 #include "Parking.h"
 
+#include <ros/ros.h>
+#include "sensor_msgs/LaserScan.h"
+
 class MoveToGap
 {
 public:
@@ -24,13 +27,25 @@ public:
 	MoveToGap();
 	virtual ~MoveToGap();
 
-	driveData moveToGap(float dataIR, float distanceToGap);
+	driveData moveToGap(sensor_msgs::LaserScan laser, float dataIRside, float dataIRback,  float distanceToGap, float voltage, int odometry);
 private:
 	bool cartonSeen;
 	bool distanceGot;
 	ros::Time gapBegin;
 	ros::Time distanceFound;
-	float timeToDrive;
+	ros::Time lastTime;
+	int mode;
+	float distanceToDrive;
+
+	int lastOdometry;
+	float drivenM(int odometry);
+
+	void waitForDistance(float, int);
+	void driveFirstHalf(int, float);
+	void driveSecondHalf(float, int);
+	int positioning(int, int);
+
+
 };
 
 #endif /* MOVETOGAP_H_ */

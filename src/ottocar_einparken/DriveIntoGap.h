@@ -10,7 +10,6 @@
 
 #include "ros/ros.h"
 #include "sensor_msgs/LaserScan.h"
-#include "ParkingController.h"
 #include "std_msgs/Float32.h"
 
 class DriveIntoGap
@@ -19,8 +18,8 @@ public:
 
 	struct twoInts
 	{
-		int x;
-		int y;
+		int angle;
+		int speed;
 	};
 
 	DriveIntoGap();
@@ -30,53 +29,29 @@ public:
 	 * [1]: angle
 	 * [0]: speed
 	 */
-	twoInts drive(sensor_msgs::LaserScan laser, float gapSize);
+	twoInts drive(sensor_msgs::LaserScan laser, float gapSize, float distanceBack, float distanceSide, int odometry, float voltage);
 
 private:
 
-	enum DirectionStatus
-	{
-		back, forth
-	};
+	//float timeToDrive;
+	ros::Time lastTime;
+	int mode;
+	int lastOdometry;
+	int SPEED;
 
-	float minimalLaserDistance;
-	DirectionStatus currentDrivingDirection;
-	float gapSize;
-	ParkingController parkingController;
-	/**
-	 * Is the Robot able to drive backwards? Or is the wall already too close?
-	 */
-	bool enoughSpaceInTheBack();
+	float calculateSpeed10(float voltage);
+	float drivenM(int odometry);
 
-	/**
-	 * Is the Robot able to drive forwards? Or ist the wall already too close?
-	 */
-	bool enoughSpaceOnTheFront();
-
-	/**
-	 * drive backwards in a fine S-Movement
-	 */
-	twoInts backward();
-
-	/**
-	 * drive forwards in a nearly straight line while correcting your direction
-	 */
-	twoInts forward();
-
-	/**
-	 * Befindet sich der Roboter in der vorderen Hälfte der Lücke?
-	 */
-	bool firstHalf();
-
-	/**
-	 * Roboter ist ungefähr parallel zur Straße ausgerichtet
-	 */
-	bool isStraight();
-
-	//###################################################
-	//temporär, bis sinnvolle Methoden von Simone kommen:
-	//###################################################
-
+	twoInts init();
+	twoInts wait1(int odometry);
+	twoInts back1(float gapSize, int odometry);
+	twoInts wait2(int odometry);
+	twoInts back2(float distanceBack, int odometry, float gapSize);
+	twoInts wait3();
+	twoInts waitTurn(int odometry);
+	twoInts forwards(const sensor_msgs::LaserScan laser, float gapSize, int odometry);
+	twoInts wait4(int odometry);
+	twoInts backLast(float distanceBack, int odometry);
 };
 
 #endif /* DRIVEINTOGAP_H_ */

@@ -11,14 +11,47 @@
 laserState currentSearchState = start;
 
 GapCalculator::GapCalculator() :
-		Pi(3.14159265), gapDistance(-1)
+						Pi(3.14159265), gapDistance(-1),gapIs(-1), parkEnable(false)
 {
-
+	HDistance = -1;
+	baseHDistance = -1;
+	minVDistance = -1;
+	space = -1;
+	baseVDistance = -1;
+	secondHDistance = -1;
+	angle = -1;
+	baseRange = -1;
 }
 
-bool GapCalculator::LaserScanGapCal(const sensor_msgs::LaserScan laser)
+bool GapCalculator::testGap(double space)
 {
+	if (SMALLGAP - 0.05 <= space && space < SMALLGAP + 0.02
+			&& minVDistance < 1.00)
+	{
+		gapIs = 0.60;
+		parkEnable = true;
+		return true;
 
+	}
+	else if (MEDIUMGAP - 0.07 <= space && space < MEDIUMGAP + 0.02
+			&& minVDistance < 1.00)
+	{
+		gapIs =0.70;
+		parkEnable = true;
+		return true;
+	}
+	else if (LARGGAP - 0.07 <= space && space <= LARGGAP + 0.02
+			&& minVDistance < 1.00)
+	{
+		gapIs =0.80;
+		parkEnable = false;
+		return true;
+	}
+	return false;
+}
+
+void GapCalculator::LaserScanGapCal(const sensor_msgs::LaserScan laser)
+{
 	minVDistance = 0;
 	angle = laser.angle_max;
 
@@ -27,59 +60,61 @@ bool GapCalculator::LaserScanGapCal(const sensor_msgs::LaserScan laser)
 	{
 
 		HDistance = laser.ranges[i] * cos(laser.angle_max - angle);
-		if (currentSearchState == start && HDistance < FIRSTDISTANCE)
-		{
-			currentSearchState = calculateBaseRange;
 
-		}
-		if (currentSearchState == calculateBaseRange)
-		{
-			if (2 * laser.ranges[i] < laser.ranges[i - 1])
-			{
-				currentSearchState = calculateMaxPoint;
-				baseVDistance = laser.ranges[i] * sin(laser.angle_max - angle);
-				baseHDistance = laser.ranges[i] * cos(laser.angle_max - angle);
-
-			}
-		}
-		if (currentSearchState == calculateMaxPoint
-				&& laser.ranges[i] > (laser.ranges[i - 1]))
-		{
-			currentSearchState = calculateMinPoint;
-		}
-
-		if (currentSearchState == calculateMinPoint
-				&& laser.ranges[i] < (laser.ranges[i - 1]))
-		{
-
-			secondHDistance = laser.ranges[i] * cos(laser.angle_max - angle);
-
-			if (abs(secondHDistance - baseHDistance) < MINDISTANCE)
-			{
-
-				minVDistance = laser.ranges[i] * sin(laser.angle_max - angle);
-				space = minVDistance - baseVDistance;
-
-				if (BESTGAPLENGTH - 0.5 < space && space < BESTGAPLENGTH + 0.5)
-				{
-					gapDistance = minVDistance;
-				}
-				else
-				{
-					currentSearchState = start;
-					return false;
-				}
-			}
-		}
+		currentSearchState = startState(currentSearchState);
+		currentSearchState = calculateBase(currentSearchState, laser, i);
+		currentSearchState = calculateMax(currentSearchState, laser, i);
+		currentSearchState = calculateMin(currentSearchState, laser, i);
 
 		angle -= laser.angle_increment;
 
 	}
 
-	return false;
 }
 
-float GapCalculator::getGapDistance()
+void GapCalculator::calculateAverageValue(const sensor_msgs::LaserScan laser, int i)
+{
+	double secondHDistance2 = 0;
+	double secondVDistance2 = 0;
+	double sum = 0;
+	double mean = 0;
+	int counter = 0;
+
+	for (int c = 0; c < 100; c++)
+	{
+		if (laser.ranges[i - c] != BIGRANGE)
+		{
+			secondHDistance2 = abs( laser.ranges[i - c] * cos(laser.angle_increment* (laser.ranges.size() - (i - c))));
+
+			secondVDistance2 = abs(laser.ranges[i - c] * sin( laser.angle_increment * (laser.ranges.size() - (i - c))));
+
+			if (abs(secondHDistance2 - baseHDistance) < MINDISTANCE
+					&& secondVDistance2 < 1.0
+					&& abs(baseRange - laser.ranges[i - c]) > 0.4)
+			{
+				sum += secondVDistance2;
+				counter++;
+			}
+		}
+
+	}
+	minVDistance = sum / counter;
+}
+
+void GapCalculator::simpleParking(double space)
+{
+	if (BESTGAPLENGTH - 0.05 < space && space < BESTGAPLENGTH + 0.05)
+	{
+		gapDistance = minVDistance;
+	}
+	else
+	{
+		currentSearchState = start;
+	}
+
+}
+
+double GapCalculator::getGapDistance()
 {
 	return gapDistance;
 }
@@ -87,4 +122,95 @@ float GapCalculator::getGapDistance()
 GapCalculator::~GapCalculator()
 {
 
+}
+
+laserState GapCalculator::startState(laserState currentSearchState)
+{
+	if (currentSearchState == start && HDistance < FIRSTDISTANCE)
+	{
+		return calculateBaseRange;
+	}
+
+	return currentSearchState;
+}
+
+laserState GapCalculator::calculateBase(laserState currentSearchState, const sensor_msgs::LaserScan laser, int index)
+{
+	if (currentSearchState == calculateBaseRange)
+	{
+		if (2 * laser.ranges[index] < laser.ranges[index - 1]
+		                                           && laser.ranges[index] < 1.0 && laser.ranges[index] > 0.19)
+		{
+			currentSearchState = calculateMaxPoint;
+			baseVDistance = laser.ranges[index] * sin(laser.angle_max - angle);
+			baseHDistance = laser.ranges[index] * cos(laser.angle_max - angle);
+			baseRange = laser.ranges[index];
+
+			return calculateMaxPoint;
+		}
+	}
+
+	return currentSearchState;
+}
+
+laserState GapCalculator::calculateMax(laserState currentSearchState, const sensor_msgs::LaserScan laser, int index)
+{
+	if (currentSearchState == calculateMaxPoint
+			&& laser.ranges[index] > (laser.ranges[index - 1]))
+	{
+		return calculateMinPoint;
+	}
+
+	return currentSearchState;
+}
+
+laserState GapCalculator::calculateMin(laserState currentSearchState, const sensor_msgs::LaserScan laser, int index)
+{
+	if (currentSearchState == calculateMinPoint
+			&& laser.ranges[index]
+			                < (laser.ranges[index - 1] && laser.ranges[index] != BIGRANGE))
+	{
+
+		secondHDistance = laser.ranges[index] * cos(laser.angle_max - angle);
+
+		if (abs(secondHDistance - baseHDistance) < MINDISTANCE
+				&& abs(baseRange - laser.ranges[index]) > 0.1)
+		{
+			calculateAverageValue(laser, index);
+
+			space = minVDistance - baseVDistance;
+
+			if (!SEQUENCEPARK)
+			{
+
+				simpleParking(space);
+			}
+			else
+			{
+				if (testGap(space))
+				{
+					if (FIRSTPARK)
+					{
+						gapDistance = minVDistance;
+					}
+					else if (parkEnable)
+					{
+						gapDistance = minVDistance;
+					}
+					else
+					{
+						return start;
+					}
+				}
+				else
+				{
+					return start;
+				}
+
+			}
+
+		}
+	}
+
+	return currentSearchState;
 }

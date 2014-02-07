@@ -8,12 +8,11 @@
 #include "DriveIntoGap.h"
 #include "ConstPark.h"
 
-
 DriveIntoGap::DriveIntoGap()
 {
-	currentDrivingDirection = back;
-	gapSize = -1;
-	minimalLaserDistance = -1;
+	mode = 3;
+	lastOdometry = 0;
+	SPEED = SPEED_PARKING;
 }
 
 DriveIntoGap::~DriveIntoGap()
@@ -21,123 +20,335 @@ DriveIntoGap::~DriveIntoGap()
 
 }
 
-DriveIntoGap::twoInts DriveIntoGap::drive(sensor_msgs::LaserScan laser, float gapSize)
+float DriveIntoGap::drivenM(int odometry)
 {
-	this->gapSize = gapSize;
-	parkingController.LaserScanParkControll(laser);
-	this->minimalLaserDistance = parkingController.getMinimalDistance();
+	//gibt die gefahrenen Distanz in m vom letzten Zeitpunkt unabhaengig von der Fahrtrichtung zurueck
+	return abs((lastOdometry) - (odometry)) / REVOLUTIONS_PER_M;
+}
 
-	//test:
-//	enoughSpaceInTheBack();
-//	enoughSpaceOnTheFront();
+DriveIntoGap::twoInts DriveIntoGap::drive(sensor_msgs::LaserScan laser,
+		float gapSize, float distanceBack, float distanceSide, int odometry, float voltage)
+{
+	twoInts speedAndAngle; //[1]angle, [0]speed
+	speedAndAngle.angle = STRAIGHTFORWARD;
+	speedAndAngle.speed = 0;
 
-
-	twoInts speedAndAngle;	//[1]angle, [0]speed
-
-	if(currentDrivingDirection == back)// && enoughSpaceInTheBack())
+	switch (mode)
 	{
-		speedAndAngle = backward();
+	case 3:
+		speedAndAngle = init();
+		break;
+
+	case 4:
+		speedAndAngle = wait1(odometry);
+		break;
+
+	case 5:
+		speedAndAngle = back1(gapSize, odometry);
+		break;
+
+	case 6:
+		speedAndAngle = wait2(odometry);
+		break;
+
+	case 7:
+		speedAndAngle = back2(distanceBack, odometry, gapSize);
+		break;
+
+	case 8:
+		speedAndAngle = wait3();
+		break;
+
+	case 9:
+		speedAndAngle = waitTurn(odometry);
+		break;
+
+	case 10:
+		speedAndAngle = forwards(laser, gapSize, odometry);
+		break;
+
+	case 11:
+		speedAndAngle = wait4(odometry);
+		break;
+
+	case 12:
+		speedAndAngle = backLast(distanceBack, odometry);
+		break;
+
+	default:
+		speedAndAngle.angle = STRAIGHTFORWARD;
+		speedAndAngle.speed = 0;
+		break;
 	}
-	else if(enoughSpaceOnTheFront())
+
+	return speedAndAngle;
+}
+
+float DriveIntoGap::calculateSpeed10(float voltage)
+{
+	float result;
+	result = 0.05083733 * voltage - 0.3547296;
+	ROS_INFO("[DIG]: voltage: %2.4f | speed: %2.4f", voltage, result);
+	return result;
+}
+
+DriveIntoGap::twoInts DriveIntoGap::init()
+{
+	lastTime = ros::Time::now();
+	mode = 4;
+
+	twoInts ti;
+	ti.angle = STRAIGHTFORWARD;
+	ti.speed = 0;
+
+	return ti;
+}
+
+DriveIntoGap::twoInts DriveIntoGap::wait1(int odometry)
+{
+	if ((lastTime + ros::Duration(0.5)) < ros::Time::now())
 	{
-		currentDrivingDirection = forth;
-		speedAndAngle = forward();
+		lastTime = ros::Time::now();
+		lastOdometry = odometry;
+		mode = 5;
+	}
+
+	twoInts ti;
+	ti.angle = STRAIGHTFORWARD;
+	ti.speed = 0;
+
+	return ti;
+}
+
+DriveIntoGap::twoInts DriveIntoGap::back1(float gapSize, int odometry)
+{
+	//60 cm
+	if (gapSize == (float) 0.6)
+	{
+		if (drivenM(odometry) > 0.45)
+		{
+			ROS_INFO("[DIG]: 1. Teil 60cm Rueckwaerts: %2.4f", drivenM(odometry));
+			lastTime = ros::Time::now();
+			lastOdometry = odometry;
+			mode = 6;
+		}
+
+	}
+
+	//70 cm
+	else if (gapSize == (float) 0.7)
+	{
+		if (drivenM(odometry) > 0.43)
+		{
+			ROS_INFO("[DIG]: 1. Teil 70cm Rueckwaerts: %2.4f", drivenM(odometry));
+			lastTime = ros::Time::now();
+			lastOdometry = odometry;
+			mode = 6;
+		}
+	}
+
+	//80 cm
+	else if (gapSize == (float) 0.8)
+	{
+		if (drivenM(odometry) > 0.45)
+		{
+			ROS_INFO("[DIG]: 1. Teil 80cm Rueckwaerts: %2.4f", drivenM(odometry));
+			lastTime = ros::Time::now();
+			lastOdometry = odometry;
+			mode = 6;
+		}
 	}
 	else
 	{
-		currentDrivingDirection = back;
-		speedAndAngle = backward();
+		ROS_INFO("gapSize: %2.32f", gapSize);
+		mode = 25;
 	}
+
+	twoInts speedAndAngle;
+	speedAndAngle.angle = RIGHT_MAX;
+	speedAndAngle.speed = - SPEED;
 
 	return speedAndAngle;
 }
 
-bool DriveIntoGap::enoughSpaceInTheBack()
+DriveIntoGap::twoInts DriveIntoGap::wait2(int odometry)
 {
-	//eine Methode von Simone aufrufen
-	if(gapSize == -1 || minimalLaserDistance == -1 || minimalLaserDistance + SECUREDISTANCE_BACK > gapSize)
+	if ((lastTime + ros::Duration(0.5)) < ros::Time::now())
 	{
-		ROS_INFO("not enough space - back");
-		return false;
+		lastTime = ros::Time::now();
+		lastOdometry = odometry;
+		mode = 7;
 	}
+	twoInts ti;
+	ti.speed = 0;
+	ti.angle = STRAIGHTFORWARD;
 
-	return true;
-
-	//temp:
-	//return enoughSpaceBackSimulation();
+	return ti;
 }
 
-bool DriveIntoGap::enoughSpaceOnTheFront()
+DriveIntoGap::twoInts DriveIntoGap::back2(float distanceBack, int odometry, float gapSize)
 {
-	//eine Methode von Simone aufrufen
-	if(minimalLaserDistance < SECUREDISTANCE_FRONT)//10 cm bis zur Spitze, dann 5 cm Sicherheitsabstand
+	//60 cm
+	if (gapSize == (float) 0.6)
 	{
-		ROS_INFO("not enough space - front");
-		return false;
-	}
-
-	return true;
-
-	//temp:
-	//return enoughSpaceFrontSimulation();
-}
-
-bool DriveIntoGap::firstHalf()
-{
-	return parkingController.rightTurn();
-
-
-	//temp:
-	//return firstHalfSimulation();
-
-	return true;
-}
-
-bool DriveIntoGap::isStraight()
-{
-	//eine Methode von Simone aufrufen
-	return false;
-}
-
-DriveIntoGap::twoInts DriveIntoGap::backward()
-{
-	//Todo statt konstanter Werte einen variablen Geschwindigkeit
-
-	twoInts speedAndAngle;
-
-	if(firstHalf())	//solange er sich in der vorderen Hälfte befindet, ...
-	{
-		//... soll der Roboter maximal nach rechts einschlagen und rückwärts fahren
-		speedAndAngle.x = PARKINGSPEED;
-		speedAndAngle.y = RIGHT_MAX;
-	}
-	else	//ab der hinteren Hälfte muss er wieder zurücksetzen
-	{
-		if(isStraight())	//falls er bereits parallel zur Straße steht, setzt er noch ein kleines Stück zurück (muss er?)
+		if (distanceBack < 0.12
+				|| (lastTime + ros::Duration(5)) < ros::Time::now()) //todo 0.12
 		{
-			speedAndAngle.x = PARKINGSPEED;
-			speedAndAngle.y = STRAIGHTFORWARD;
-		}
-		else	//ansonsten dreht er sich maximal nach links und fährt rückwärts
-		{
-//			speedAndAngle.x = PARKINGSPEED;
-			speedAndAngle.x = 0;
-			speedAndAngle.y = LEFT_MAX;
+			ROS_INFO("[DIG]: in die Luecke gefahren: %2.4f", distanceBack);
+			ROS_INFO("[DIG]: --> gefahrene Strecke: %2.4f", drivenM(odometry));
+			lastTime = ros::Time::now();
+			mode = 8;
 		}
 	}
 
+	//70 cm
+	if (gapSize == (float) 0.7)
+	{
+		if (distanceBack < 0.16
+				|| (lastTime + ros::Duration(5)) < ros::Time::now()) //todo 0.12
+		{
+			ROS_INFO("[DIG]: in die Luecke gefahren: %2.4f", distanceBack);
+			ROS_INFO("[DIG]: --> gefahrene Strecke: %2.4f", drivenM(odometry));
+			lastTime = ros::Time::now();
+			mode = 8;
+		}
+	}
 
-	return speedAndAngle;
+	//80 cm
+	if (gapSize == (float) 0.8)
+	{
+		if (distanceBack < 0.15
+				|| (lastTime + ros::Duration(5)) < ros::Time::now()) //todo 0.12
+		{
+			ROS_INFO("[DIG]: in die Luecke gefahren: %2.4f", distanceBack);
+			ROS_INFO("[DIG]: --> gefahrene Strecke: %2.4f", drivenM(odometry));
+			lastTime = ros::Time::now();
+			mode = 8;
+		}
+	}
+
+	twoInts ti;
+	ti.angle = LEFT_MAX;
+	ti.speed = - SPEED;
+
+	return ti;
 }
 
-DriveIntoGap::twoInts DriveIntoGap::forward()
+DriveIntoGap::twoInts DriveIntoGap::wait3()
 {
-	//Todo nicht nur vorwärts, sondern Ausrichtung korrigieren
-	//Todo Geschwindigkeit variabel machen
+	if ((lastTime + ros::Duration(0.3)) < ros::Time::now())
+	{
+		lastTime = ros::Time::now();
+		mode = 9;
+	}
+	twoInts ti;
+	ti.speed = 0;
+	ti.angle = STRAIGHTFORWARD;
 
-	twoInts speedAndAngle;
-	speedAndAngle.x = - PARKINGSPEED;
-	speedAndAngle.y = STRAIGHTFORWARD;
-
-	return speedAndAngle;
+	return ti;
 }
+
+DriveIntoGap::twoInts DriveIntoGap::waitTurn(int odometry)
+{
+	if ((lastTime + ros::Duration(0.2)) < ros::Time::now())
+	{
+		lastTime = ros::Time::now();
+		lastOdometry = odometry;
+		mode = 10;
+	}
+
+	twoInts ti;
+	ti.angle = RIGHT_MAX;
+	ti.speed = 0;
+
+	return ti;
+}
+
+DriveIntoGap::twoInts DriveIntoGap::forwards(const sensor_msgs::LaserScan laser, float gapSize, int odometry)
+{
+	twoInts ti;
+	ti.angle = STRAIGHTFORWARD;
+	ti.speed = 0;
+
+	if ((lastTime + ros::Duration(2.0)) < ros::Time::now())	//todo timeout sinnvoll?
+	{
+		ROS_WARN("[DIG]: nach vorne gefahren: timeOut");
+		lastTime = ros::Time::now();
+		mode = 11;
+		return ti;
+	}
+
+	//60cm Lücke
+	if (gapSize == (float) 0.6)
+	{
+		for (int i = 255 - 150; i <= 255 + 150; i++) //todo vllt. Odometrie
+		{
+			if (laser.ranges[i] < 0.10)
+			{
+				ROS_INFO(
+						"[DIG]: nach vorne gefahren: %2.4f | i: %d", laser.ranges[i], i);
+				lastTime = ros::Time::now();
+				mode = 11;
+				return ti;
+			}
+		}
+		ti.angle = RIGHT_MAX;
+	}
+
+	//70cm Lücke
+	if (gapSize == (float) 0.7)
+	{
+		for (int i = 255 - 150; i <= 255 + 150; i++) //todo vllt. Odometrie
+		{
+			if (laser.ranges[i] < 0.16)
+			{
+				ROS_INFO(
+						"[DIG]: nach vorne gefahren: %2.4f | i: %d", laser.ranges[i], i);
+				lastTime = ros::Time::now();
+				mode = 11;
+				return ti;
+			}
+		}
+		ti.angle = STRAIGHTFORWARD;
+	}
+
+
+	ti.speed = SPEED;
+
+	return ti;
+}
+
+DriveIntoGap::twoInts DriveIntoGap::wait4(int odometry)
+{
+	if ((lastTime + ros::Duration(0.5)) < ros::Time::now())
+	{
+		lastTime = ros::Time::now();
+		lastOdometry = odometry;
+		mode = 12;
+	}
+
+	twoInts ti;
+	ti.angle = STRAIGHTFORWARD;
+	ti.speed = 0;
+
+	return ti;
+}
+
+DriveIntoGap::twoInts DriveIntoGap::backLast(float distanceBack, int odometry)
+{
+	//todo das auto faehrt nicht an
+
+	if (drivenM(odometry) > 0.15 || distanceBack < 11)
+	{
+		ROS_INFO("[DIG]: kurzes Stueck zurueckgesetzt: %2.4f",distanceBack);
+		ROS_INFO("[DIG]: gefahrene Odometrie: %2.4f",drivenM(odometry));
+		lastTime = ros::Time::now();
+		mode = 13;
+	}
+	twoInts ti;
+	ti.angle = STRAIGHTFORWARD;
+	ti.speed =  - SPEED;
+
+	return ti;
+}
+
