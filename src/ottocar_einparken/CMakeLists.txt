@@ -115,10 +115,10 @@ include_directories(
 #   ${catkin_LIBRARIES}
 # )
 
-add_executable(parking Parking.cpp GapCalculator.cpp ParallelController.cpp MoveToGap.cpp DriveIntoGap.cpp RingBuffer.cpp Orientation.cpp)
+add_executable(parking Parking.cpp GapCalculator.cpp ParallelController.cpp MoveToGap.cpp DriveIntoGap.cpp RingBuffer.cpp)
 target_link_libraries(parking ${catkin_LIBRARIES})
 
-add_executable(calibration Calibration.cpp GapCalculator.cpp ParallelController.cpp MoveToGap.cpp DriveIntoGap.cpp RingBuffer.cpp Orientation.cpp)
+add_executable(calibration Calibration.cpp GapCalculator.cpp ParallelController.cpp MoveToGap.cpp DriveIntoGap.cpp RingBuffer.cpp)
 target_link_libraries(calibration ${catkin_LIBRARIES})
 
 

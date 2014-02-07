@@ -15,7 +15,6 @@
 #include "std_msgs/Int32.h"
 #include "std_msgs/String.h"
 #include "std_msgs/Float32.h"
-#include "sensor_msgs/Imu.h"
 
 #include <sstream>
 #include <iostream>
@@ -24,7 +23,6 @@
 #include "ParallelController.h"
 #include "DriveIntoGap.h"
 #include "MoveToGap.h"
-#include "Orientation.h"
 
 #include "RingBuffer.h"
 
@@ -39,9 +37,6 @@ private:
 	ros::Subscriber sensor_ir2_Subscriber;
 	ros::Subscriber sensor_voltage;
 	ros::Subscriber sensor_motor_revolutions_Subscriber;
-	ros::Subscriber imu_dataRaw_Subscriber;
-
-	ros::Time lastImuTime;
 
 
 public:
@@ -53,12 +48,10 @@ public:
 	GapCalculator gapcal;
 	ParallelController parallel;
 	DriveIntoGap driveIntoGap;
-	Orientation orient;
 
 	ros::Publisher angle_pub;
 	ros::Publisher speed_pub;
 
-	void orientation(const sensor_msgs::Imu imu);
 	void ir1Values(const std_msgs::Float32 sensor);
 	void ir2Values(const std_msgs::Float32 sensor);
 	void voltageValues(std_msgs::Float32 msg);

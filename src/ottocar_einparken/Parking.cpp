@@ -19,7 +19,6 @@ Parking::Parking() :
 
 	bufferBack = new RingBuffer();
 	bufferSide = new RingBuffer();
-	lastImuTime = ros::Time::now();
 	lastLaserscanTime = ros::Time::now();
 }
 
@@ -149,17 +148,6 @@ void Parking::motorValues(const std_msgs::Int32 sensor)
 	motorRevolutions = sensor.data;
 }
 
-void Parking::orientation(const sensor_msgs::Imu imu)
-{
-	orient.updateOrientation(imu.angular_velocity.x,imu.angular_velocity.y,imu.angular_velocity.z,
-			(ros::Time::now().nsec - lastImuTime.nsec) / 1000000);
-
-	lastImuTime = ros::Time::now();
-
-	ROS_INFO("[PAR] orientationX: %f, orientationY: %f, orientationZ: %f",
-			orient.orientationX(), orient.orientationY(), orient.orientationZ());
-}
-
 void Parking::init()
 {
 	angle_pub = parkingNode.advertise<std_msgs::Int8>("angle_cmd", 1);
@@ -174,7 +162,6 @@ void Parking::init()
 			&Parking::voltageValues, this);
 	sensor_motor_revolutions_Subscriber = parkingNode.subscribe(
 			"/sensor_motor_revolutions", 1, &Parking::motorValues, this);
-	imu_dataRaw_Subscriber = parkingNode.subscribe("/imu/data_raw", 1, &Parking::orientation, this);
 
 	ros::Duration(1).sleep();
 }
