@@ -150,7 +150,7 @@ void Parking::motorValues(const std_msgs::Int32 sensor)
 void Parking::orientation(const sensor_msgs::Imu imu)
 {
 	orient.updateOrientation(imu.angular_velocity.x,imu.angular_velocity.y,imu.angular_velocity.z,
-			ros::Time::now().nsec - lastImuTime.nsec);
+			(ros::Time::now().nsec - lastImuTime.nsec) / 1000000);
 
 	lastImuTime = ros::Time::now();
 

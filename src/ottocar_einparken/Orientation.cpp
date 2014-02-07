@@ -21,18 +21,18 @@ Orientation::~Orientation()
 
 
 
-//timespan in nsec
-void Orientation::updateOrientation(float velX, float velY, float velZ, float timeSpan)
+//timespan in msec
+void Orientation::updateOrientation(float velX, float velY, float velZ, int timeSpan)
 {
-	velX = calculateOrient(velX, timeSpan);
-	velY = calculateOrient(velY, timeSpan);
-	velZ = calculateOrient(velZ, timeSpan);
+	orientX += calculateOrient(velX, timeSpan);
+	orientY += calculateOrient(velY, timeSpan);
+	orientZ += calculateOrient(velZ, timeSpan);
 }
 
-float Orientation::calculateOrient(float vel, float timeSpan)
+float Orientation::calculateOrient(float vel, int timeSpan)
 {
-	ROS_INFO("[ORI] vel: %f time: %f", vel, timeSpan);
-	return vel * timeSpan;
+	ROS_INFO("[ORI] vel: %f time: %i erg: %f", vel, timeSpan, (vel * timeSpan));
+	return vel * (timeSpan);
 }
 
 float Orientation::orientationX()

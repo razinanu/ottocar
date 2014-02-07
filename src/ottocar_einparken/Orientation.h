@@ -18,13 +18,13 @@ private:
 	float orientY;
 	float orientZ;
 
-	float calculateOrient(float vel, float timeSpan);
+	float calculateOrient(float vel, int timeSpan);
 
 public:
 	Orientation();
 	virtual ~Orientation();
 
-	void updateOrientation(float velX, float velY, float velZ, float timeSpan);
+	void updateOrientation(float velX, float velY, float velZ, int timeSpan);
 	float orientationX();
 	float orientationY();
 	float orientationZ();
