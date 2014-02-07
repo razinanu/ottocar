@@ -29,7 +29,7 @@ float MoveToGap::drivenM(int odometry)
 
 MoveToGap::driveData MoveToGap::moveToGap(sensor_msgs::LaserScan laser,
 		float dataIRside, float dataIRback, float distanceToGap, float voltage,
-		int odometry)
+		int odometry, float gapSize)
 {
 	driveData result;
 
@@ -51,7 +51,7 @@ MoveToGap::driveData MoveToGap::moveToGap(sensor_msgs::LaserScan laser,
 		break;
 
 	case 3:
-		result.speed.data = positioning(odometry, result.speed.data);
+		result.speed.data = positioning(odometry, result.speed.data, gapSize);
 		break;
 
 
@@ -103,13 +103,23 @@ void MoveToGap::driveSecondHalf(float dataIRside, int odometry)
 }
 
 //x cm hinter der Luecke anhalten
-int MoveToGap::positioning(int odometry, int speed)
+int MoveToGap::positioning(int odometry, int speed, float gapSize)
 {
 	if (drivenM(odometry) > 0.17)
 	{
 		ROS_INFO("[MTG]: hinter der Luecke angehalten: %2.4f",drivenM(odometry));
 		mode = 4;
 		return 0;
+	}
+
+	if (gapSize == (float) 0.8)
+	{
+		if (drivenM(odometry) > 0.15)
+		{
+			ROS_INFO("[MTG]: hinter Luecke 80cm angehalten: %2.4f",drivenM(odometry));
+			mode = 4;
+			return 0;
+		}
 	}
 
 	return speed;

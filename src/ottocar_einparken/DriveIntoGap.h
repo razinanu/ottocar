@@ -46,7 +46,7 @@ private:
 	twoInts wait1(int odometry);
 	twoInts back1(float gapSize, int odometry);
 	twoInts wait2(int odometry);
-	twoInts back2(float distanceBack, int odometry, float gapSize);
+	twoInts back2(const sensor_msgs::LaserScan laser, float distanceBack, int odometry, float gapSize);
 	twoInts wait3();
 	twoInts waitTurn(int odometry);
 	twoInts forwards(const sensor_msgs::LaserScan laser, float gapSize, int odometry);

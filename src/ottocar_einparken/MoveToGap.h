@@ -27,7 +27,7 @@ public:
 	MoveToGap();
 	virtual ~MoveToGap();
 
-	driveData moveToGap(sensor_msgs::LaserScan laser, float dataIRside, float dataIRback,  float distanceToGap, float voltage, int odometry);
+	driveData moveToGap(sensor_msgs::LaserScan laser, float dataIRside, float dataIRback,  float distanceToGap, float voltage, int odometry, float gapSize);
 private:
 	bool cartonSeen;
 	bool distanceGot;
@@ -43,7 +43,7 @@ private:
 	void waitForDistance(float, int);
 	void driveFirstHalf(int, float);
 	void driveSecondHalf(float, int);
-	int positioning(int, int);
+	int positioning(int, int, float);
 
 
 };
