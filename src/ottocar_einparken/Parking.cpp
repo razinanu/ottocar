@@ -52,18 +52,6 @@ void Parking::scanValues(sensor_msgs::LaserScan laser)
 	{
 		parallel.laserScanParallel(laser);
 	}
-//Whether the car is at correct Position to park.
-//in case that car is at correct Position, PrkingController must be set to true
-
-//ParkingController set to true, if the car is at correct position to park
-// ParkingController_ = true;
-	if (ParkingController_)
-	{
-// float size = 60.0;
-// DriveIntoGap::twoInts twoInts = driveIntoGap.drive(laser, BESTGAPLENGTH, distanceBack, distanceSide);
-// intoGapAngle = twoInts.angle;
-// intoGapSpeed = twoInts.speed;
-	}
 
 	lastLaserscanTime = ros::Time::now();
 	g_laser = laser;
@@ -258,7 +246,6 @@ int main(int argc, char** argv)
 	ros::Rate loop_rate(LOOP_RATE);
 	while (ros::ok)
 	{
-
 		//move to the gap
 		if (!park.ParkingController_)
 		{
@@ -292,8 +279,6 @@ int main(int argc, char** argv)
 					park.g_laser, park.gapcal.gapIs,
 					park.bufferBack->getMedian(), park.bufferSide->getMedian(),
 					park.motorRevolutions, park.voltage);
-//			park.intoGapAngle = twoInts.angle;
-//			park.intoGapSpeed = twoInts.speed;
 
 			data.angle.data = twoInts.angle;
 			data.speed.data = twoInts.speed;
@@ -301,11 +286,6 @@ int main(int argc, char** argv)
 			data.led2.data = twoInts.led2;
 			data.led3.data = twoInts.led3;
 
-//			std_msgs::Int8 angle;
-//			angle.data = park.intoGapAngle;
-//
-//			std_msgs::Int8 speed;
-//			speed.data = park.intoGapSpeed;
 
 			park.angle_pub.publish(data.angle);
 			park.speed_pub.publish(data.speed);
