@@ -8,7 +8,8 @@
 #include "Parking.h"
 
 Parking::Parking() :
-		GapCalculator_(true), ParallelController_(true), ParkingController_(false)
+		GapCalculator_(true), ParallelController_(true), ParkingController_(
+				false)
 {
 	intoGapAngle = 0;
 	intoGapSpeed = 0;
@@ -70,37 +71,6 @@ float Parking::linearizeBack(float value)
 	{
 		return 0.4;
 	}
-
-// if (value > 0.1)
-// {
-// return 0.1194 / (value + 0.028);
-// }
-// else
-// {
-// return 0.4;
-// }
-
-//diese Berechnung hat einen Sprung zwischen 10 und 15cm
-// float error = 40.0;
-//
-//// drei geraden zur annaeherung an die funktion
-// if (value > 1.25 && value < 4.0)
-// {
-// return (1 / (-1.45 / 6)) * value + (432 / 29);
-// }
-// else if (value > 0.8)
-// {
-// return (1 / (-1.45 / 6)) * value + (432 / 29);
-// }
-// else if (value > 0.3)
-// {
-// return (1 / (-0.075)) * value + (80 / 3);
-// }
-// else
-// {
-//// ROS_INFO("[PAR]: linearlize of %f", value);
-// return error;
-// }
 }
 
 float Parking::linearizeSide(float value)
@@ -116,14 +86,6 @@ float Parking::linearizeSide(float value)
 		return 0.4;
 	}
 
-// if (value > 0.1)
-// {
-// return 0.1128 / (value - 0.124);
-// }
-// else
-// {
-// return 0.4;
-// }
 }
 
 void Parking::ir1Values(std_msgs::Float32 sensor)
@@ -169,6 +131,49 @@ void Parking::init()
 	ros::Duration(1).sleep();
 }
 
+void Parking::finishedParkLed()
+{
+	// TODO soll dreimal blinken und dann aufhoeren
+	// anschalten
+	if ((lastTime + ros::Duration(0.5)) < ros::Time::now())
+	{
+		msg_led.data = 100; // vorne rechts
+		led_pub.publish(msg_led);
+		msg_led.data = 107; // hinten rechts
+		led_pub.publish(msg_led);
+		msg_led.data = 103; // vorne links
+		led_pub.publish(msg_led);
+		msg_led.data = 104; // hinten links
+		led_pub.publish(msg_led);
+	}
+
+	if ((lastTime + ros::Duration(1.0)) < ros::Time::now())
+	{
+		ROS_INFO("[PAR]: aus!");
+		msg_led.data = 0; // vorne rechts
+		led_pub.publish(msg_led);
+		msg_led.data = 7; // hinten rechts
+		led_pub.publish(msg_led);
+		msg_led.data = 3; // vorne links
+		led_pub.publish(msg_led);
+		msg_led.data = 4; // hinten links
+		led_pub.publish(msg_led);
+		lastTime = ros::Time::now();
+
+		count++;
+	}
+}
+
+// alle Lichter ausschalten
+void Parking::allLightsOff()
+{
+	for (int i = 0; i < 10; ++i)
+	{
+		msg_led.data = i; // vorne rechts
+		led_pub.publish(msg_led);
+	}
+}
+
 int main(int argc, char** argv)
 {
 	ros::init(argc, argv, "parking");
@@ -212,38 +217,15 @@ int main(int argc, char** argv)
 	park.angle_pub.publish(data.angle);
 	ros::Duration(0.4).sleep();
 
-	//licht aus
-	data.led1.data = 0;
-	data.led2.data = 1;
-	data.led3.data = 2;
-	park.led_pub.publish(data.led1);
-	park.led_pub.publish(data.led2);
-	park.led_pub.publish(data.led3);
-
-	data.led1.data = 3;
-	data.led2.data = 4;
-	data.led3.data = 5;
-	park.led_pub.publish(data.led1);
-	park.led_pub.publish(data.led2);
-	park.led_pub.publish(data.led3);
-
-	data.led1.data = 6;
-	data.led2.data = 7;
-	data.led3.data = 8;
-	park.led_pub.publish(data.led1);
-	park.led_pub.publish(data.led2);
-	park.led_pub.publish(data.led3);
-
-	data.led1.data = 9;
-	data.led2.data = 9;
-	data.led3.data = 9;
-	park.led_pub.publish(data.led1);
-	park.led_pub.publish(data.led2);
-	park.led_pub.publish(data.led3);
-
 	ROS_INFO("[PAR]: Parking gestartet");
 
 	ros::Rate loop_rate(LOOP_RATE);
+
+	//licht aus
+	park.allLightsOff(); // TODO auskommentieren
+	park.lastTime = ros::Time::now();
+	park.count = 0;
+
 	while (ros::ok)
 	{
 		//move to the gap
@@ -286,14 +268,20 @@ int main(int argc, char** argv)
 			data.led2.data = twoInts.led2;
 			data.led3.data = twoInts.led3;
 
-
 			park.angle_pub.publish(data.angle);
 			park.speed_pub.publish(data.speed);
 			park.led_pub.publish(data.led1);
 			park.led_pub.publish(data.led2);
 			park.led_pub.publish(data.led3);
 		}
-
+		// 3-maliges Blinken - Parken fertig!
+		if (park.driveIntoGap.blinkDone) // todo test
+		{
+			if (park.count < 3)
+			{
+				park.finishedParkLed();
+			}
+		}
 		ros::spinOnce();
 		loop_rate.sleep();
 	}

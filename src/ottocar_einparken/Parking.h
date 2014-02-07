@@ -59,8 +59,14 @@ public:
 	ros::Publisher angle_pub;
 	ros::Publisher speed_pub;
 	ros::Publisher led_pub;
+	std_msgs::UInt8 msg_led;
+	ros::Time lastTime;
 
+	int count;
+	void finishedParkLed();
+	void allLightsOff();
 	void orientation(const sensor_msgs::Imu imu);
+
 	void ir1Values(const std_msgs::Float32 sensor);
 	void ir2Values(const std_msgs::Float32 sensor);
 	void voltageValues(std_msgs::Float32 msg);
