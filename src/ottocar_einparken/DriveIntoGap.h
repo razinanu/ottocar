@@ -15,11 +15,18 @@
 class DriveIntoGap
 {
 public:
+	// GLOBAL
+	bool blinkDone;
+
 
 	struct twoInts
 	{
 		int angle;
 		int speed;
+		int led1;
+		int led2;
+		int led3;
+		int led4;
 	};
 
 	DriveIntoGap();
@@ -29,7 +36,7 @@ public:
 	 * [1]: angle
 	 * [0]: speed
 	 */
-	twoInts drive(sensor_msgs::LaserScan laser, float gapSize, float distanceBack, float distanceSide, int odometry, float voltage);
+	twoInts  drive(sensor_msgs::LaserScan laser, float gapSize, float distanceBack, float distanceSide, int odometry, float voltage);
 
 private:
 
@@ -46,7 +53,7 @@ private:
 	twoInts wait1(int odometry);
 	twoInts back1(float gapSize, int odometry);
 	twoInts wait2(int odometry);
-	twoInts back2(float distanceBack, int odometry, float gapSize);
+	twoInts back2(const sensor_msgs::LaserScan laser, float distanceBack, int odometry, float gapSize);
 	twoInts wait3();
 	twoInts waitTurn(int odometry);
 	twoInts forwards(const sensor_msgs::LaserScan laser, float gapSize, int odometry);

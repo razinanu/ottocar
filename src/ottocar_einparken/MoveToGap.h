@@ -22,12 +22,15 @@ public:
 	{
 		std_msgs::Int8 speed;
 		std_msgs::Int8 angle;
+		std_msgs::UInt8 led1;
+		std_msgs::UInt8 led2;
+		std_msgs::UInt8 led3;
 	};
 
 	MoveToGap();
 	virtual ~MoveToGap();
 
-	driveData moveToGap(sensor_msgs::LaserScan laser, float dataIRside, float dataIRback,  float distanceToGap, float voltage, int odometry);
+	driveData moveToGap(sensor_msgs::LaserScan laser, float dataIRside, float dataIRback,  float distanceToGap, float voltage, int odometry, float gapSize);
 private:
 	bool cartonSeen;
 	bool distanceGot;
@@ -43,7 +46,7 @@ private:
 	void waitForDistance(float, int);
 	void driveFirstHalf(int, float);
 	void driveSecondHalf(float, int);
-	int positioning(int, int);
+	MoveToGap::driveData positioning(int, int, int, float);
 
 
 };

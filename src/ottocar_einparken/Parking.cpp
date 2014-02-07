@@ -20,6 +20,8 @@ Parking::Parking() :
 
 	bufferBack = new RingBuffer();
 	bufferSide = new RingBuffer();
+
+	lastLaserscanTime = ros::Time::now();
 }
 
 Parking::~Parking()
@@ -51,19 +53,8 @@ void Parking::scanValues(sensor_msgs::LaserScan laser)
 	{
 		parallel.laserScanParallel(laser);
 	}
-//Whether the car is at correct Position to park.
-//in case that car is at correct Position, PrkingController must be set to true
 
-//ParkingController set to true, if the car is at correct position to park
-// ParkingController_ = true;
-	if (ParkingController_)
-	{
-// float size = 60.0;
-// DriveIntoGap::twoInts twoInts = driveIntoGap.drive(laser, BESTGAPLENGTH, distanceBack, distanceSide);
-// intoGapAngle = twoInts.angle;
-// intoGapSpeed = twoInts.speed;
-	}
-
+	lastLaserscanTime = ros::Time::now();
 	g_laser = laser;
 
 }
@@ -94,6 +85,7 @@ float Parking::linearizeSide(float value)
 	{
 		return 0.4;
 	}
+
 }
 
 void Parking::ir1Values(std_msgs::Float32 sensor)
@@ -123,7 +115,7 @@ void Parking::init()
 {
 	angle_pub = parkingNode.advertise<std_msgs::Int8>("angle_cmd", 1);
 	speed_pub = parkingNode.advertise<std_msgs::Int8>("speed_cmd", 1);
-	led_pub = parkingNode.advertise<std_msgs::UInt8>("led_set", 5);
+	led_pub = parkingNode.advertise<std_msgs::UInt8>("led_set", 10);
 
 	hokuyoSubscriber = parkingNode.subscribe("/scan", 1, &Parking::scanValues,
 			this);
@@ -205,6 +197,14 @@ int main(int argc, char** argv)
 	MoveToGap::driveData data;
 	MoveToGap driver;
 
+	//Bremslicht an
+	data.led1.data = 105;
+	data.led2.data = 106;
+	data.led3.data = 108;
+	park.led_pub.publish(data.led1);
+	park.led_pub.publish(data.led2);
+	park.led_pub.publish(data.led3);
+
 	data.angle.data = 0;
 	park.angle_pub.publish(data.angle);
 	ros::Duration(0.4).sleep();
@@ -221,6 +221,7 @@ int main(int argc, char** argv)
 
 	ros::Rate loop_rate(LOOP_RATE);
 
+	//licht aus
 	park.allLightsOff(); // TODO auskommentieren
 	park.lastTime = ros::Time::now();
 	park.count = 0;
@@ -236,7 +237,7 @@ int main(int argc, char** argv)
 						park.bufferSide->getMedian(),
 						park.bufferBack->getMedian(),
 						park.gapcal.getGapDistance(), park.voltage,
-						park.motorRevolutions);
+						park.motorRevolutions, park.gapcal.gapIs);
 
 				if (data.speed.data == 0)
 				{
@@ -249,6 +250,9 @@ int main(int argc, char** argv)
 			}
 			park.angle_pub.publish(data.angle);
 			park.speed_pub.publish(data.speed);
+			park.led_pub.publish(data.led1);
+			park.led_pub.publish(data.led2);
+			park.led_pub.publish(data.led3);
 		}
 		//drive into the gap
 		else if (park.ParkingController_)
@@ -257,28 +261,27 @@ int main(int argc, char** argv)
 					park.g_laser, park.gapcal.gapIs,
 					park.bufferBack->getMedian(), park.bufferSide->getMedian(),
 					park.motorRevolutions, park.voltage);
-			park.intoGapAngle = twoInts.angle;
-			park.intoGapSpeed = twoInts.speed;
 
-			std_msgs::Int8 angle;
-			angle.data = park.intoGapAngle;
+			data.angle.data = twoInts.angle;
+			data.speed.data = twoInts.speed;
+			data.led1.data = twoInts.led1;
+			data.led2.data = twoInts.led2;
+			data.led3.data = twoInts.led3;
 
-			std_msgs::Int8 speed;
-			speed.data = park.intoGapSpeed;
-
-			park.angle_pub.publish(angle);
-			park.speed_pub.publish(speed);
-
-			// 3-maliges Blinken - Parken fertig!
-			if (park.intoGapSpeed == 0) // todo test
+			park.angle_pub.publish(data.angle);
+			park.speed_pub.publish(data.speed);
+			park.led_pub.publish(data.led1);
+			park.led_pub.publish(data.led2);
+			park.led_pub.publish(data.led3);
+		}
+		// 3-maliges Blinken - Parken fertig!
+		if (park.driveIntoGap.blinkDone) // todo test
+		{
+			if (park.count < 3)
 			{
-				if (park.count < 3)
-				{
-					park.finishedParkLed();
-				}
+				park.finishedParkLed();
 			}
 		}
-
 		ros::spinOnce();
 		loop_rate.sleep();
 	}
