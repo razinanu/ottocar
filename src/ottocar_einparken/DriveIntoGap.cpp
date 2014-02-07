@@ -78,6 +78,9 @@ DriveIntoGap::twoInts DriveIntoGap::drive(sensor_msgs::LaserScan laser,
 	default:
 		speedAndAngle.angle = STRAIGHTFORWARD;
 		speedAndAngle.speed = 0;
+		speedAndAngle.led1 = 105;
+		speedAndAngle.led2 = 106;
+		speedAndAngle.led3 = 108;
 		break;
 	}
 
@@ -167,6 +170,9 @@ DriveIntoGap::twoInts DriveIntoGap::back1(float gapSize, int odometry)
 	twoInts speedAndAngle;
 	speedAndAngle.angle = RIGHT_MAX;
 	speedAndAngle.speed = - SPEED;
+	speedAndAngle.led1 = 5;
+	speedAndAngle.led2 = 6;
+	speedAndAngle.led3 = 8;
 
 	return speedAndAngle;
 }
@@ -182,6 +188,9 @@ DriveIntoGap::twoInts DriveIntoGap::wait2(int odometry)
 	twoInts ti;
 	ti.speed = 0;
 	ti.angle = STRAIGHTFORWARD;
+	ti.led1 = 105;
+	ti.led2 = 106;
+	ti.led3 = 108;
 
 	return ti;
 }
@@ -191,16 +200,8 @@ DriveIntoGap::twoInts DriveIntoGap::back2(const sensor_msgs::LaserScan laser, fl
 	//60 cm
 	if (gapSize == (float) 0.6)
 	{
-//		if (distanceBack < 0.12) //todo 0.12
-//		{
-//			ROS_INFO("[DIG]: in die Luecke gefahren: %2.4f", distanceBack);
-//			ROS_INFO("[DIG]: --> gefahrene Strecke: %2.4f", drivenM(odometry));
-//			lastTime = ros::Time::now();
-//			mode = 8;
-//		}
-
 		float minValue = 1;
-		for (int i = 255 - 150; i <= 255 + 150; i++) //todo vllt. Odometrie
+		for (int i = 255 - 150; i <= 255 + 150; i++)
 		{
 			if (laser.ranges[i] < minValue)
 			{
@@ -208,14 +209,14 @@ DriveIntoGap::twoInts DriveIntoGap::back2(const sensor_msgs::LaserScan laser, fl
 			}
 		}
 
-		if (minValue > 0.14 && minValue < 1 && drivenM(odometry) > 0.22)
+		if (minValue > 0.16 && minValue < 1 && drivenM(odometry) > 0.22)
 		{
 			ROS_WARN(
 					"[DIG]: in Luecke mit Laserscanner gefahren: %2.4f", minValue);
 			lastTime = ros::Time::now();
 			mode = 8;
 		}
-
+		//timeOut
 		if ((lastTime + ros::Duration(5)) < ros::Time::now()) //todo 0.12
 		{
 			ROS_INFO("[DIG]: in die Luecke gefahren: %2.4f", distanceBack);
@@ -229,16 +230,8 @@ DriveIntoGap::twoInts DriveIntoGap::back2(const sensor_msgs::LaserScan laser, fl
 	//70 cm
 	if (gapSize == (float) 0.7)
 	{
-//		if (distanceBack < 0.16) //todo 0.12
-//		{
-//			ROS_INFO("[DIG]: in die Luecke gefahren: %2.4f", distanceBack);
-//			ROS_INFO("[DIG]: --> gefahrene Strecke: %2.4f", drivenM(odometry));
-//			lastTime = ros::Time::now();
-//			mode = 8;
-//		}
-
 		float minValue = 1;
-		for (int i = 255 - 150; i <= 255 + 150; i++) //todo vllt. Odometrie
+		for (int i = 255 - 150; i <= 255 + 150; i++)
 		{
 			if (laser.ranges[i] < minValue)
 			{
@@ -252,57 +245,52 @@ DriveIntoGap::twoInts DriveIntoGap::back2(const sensor_msgs::LaserScan laser, fl
 			lastTime = ros::Time::now();
 			mode = 8;
 		}
-
-		if ((lastTime + ros::Duration(5)) < ros::Time::now()) //todo 0.12
+		//timeOut
+		if ((lastTime + ros::Duration(5)) < ros::Time::now())
 		{
 			ROS_INFO("[DIG]: in die Luecke gefahren: %2.4f", distanceBack);
 			ROS_WARN("[DIG]: --> timeOut: %2.4f | odo: %2.4f", minValue, drivenM(odometry));
 			lastTime = ros::Time::now();
 			mode = 8;
 		}
-
-//		ROS_INFO("odo: %2.4f | minValue: %2.4f", drivenM(odometry), minValue);
 	}
 
 	//80 cm
 	if (gapSize == (float) 0.8)
 	{
-		//		if (distanceBack < 0.16) //todo 0.12
-		//		{
-		//			ROS_INFO("[DIG]: in die Luecke gefahren: %2.4f", distanceBack);
-		//			ROS_INFO("[DIG]: --> gefahrene Strecke: %2.4f", drivenM(odometry));
-		//			lastTime = ros::Time::now();
-		//			mode = 8;
-		//		}
+		float minValue = 1;
+		for (int i = 255 - 150; i <= 255 + 150; i++)
+		{
+			if (laser.ranges[i] < minValue)
+			{
+				minValue = laser.ranges[i];
+			}
+		}
 
-				float minValue = 1;
-				for (int i = 255 - 150; i <= 255 + 150; i++) //todo vllt. Odometrie
-				{
-					if (laser.ranges[i] < minValue)
-					{
-						minValue = laser.ranges[i];
-					}
-				}
-
-				if (minValue > 0.18 && minValue < 1 && drivenM(odometry) > 0.25 )
-				{
-					ROS_WARN("[DIG]: in Luecke mit Laserscanner gefahren: %2.4f", minValue);
-					lastTime = ros::Time::now();
-					mode = 8;
-				}
-
-				if ((lastTime + ros::Duration(5)) < ros::Time::now()) //todo 0.12
-				{
-					ROS_INFO("[DIG]: in die Luecke gefahren: %2.4f", distanceBack);
-					ROS_WARN("[DIG]: --> timeOut: %2.4f | odo: %2.4f", minValue, drivenM(odometry));
-					lastTime = ros::Time::now();
-					mode = 8;
-				}
+		if (minValue > 0.18 && minValue < 1 && drivenM(odometry) > 0.25)
+		{
+			ROS_WARN(
+					"[DIG]: in Luecke mit Laserscanner gefahren: %2.4f", minValue);
+			lastTime = ros::Time::now();
+			mode = 8;
+		}
+		//timeout
+		if ((lastTime + ros::Duration(5)) < ros::Time::now())
+		{
+			ROS_INFO("[DIG]: in die Luecke gefahren: %2.4f", distanceBack);
+			ROS_WARN(
+					"[DIG]: --> timeOut: %2.4f | odo: %2.4f", minValue, drivenM(odometry));
+			lastTime = ros::Time::now();
+			mode = 8;
+		}
 	}
 
 	twoInts ti;
 	ti.angle = LEFT_MAX;
 	ti.speed = - SPEED;
+	ti.led1 = 5;
+	ti.led2 = 6;
+	ti.led3 = 8;
 
 	return ti;
 }
@@ -317,6 +305,9 @@ DriveIntoGap::twoInts DriveIntoGap::wait3()
 	twoInts ti;
 	ti.speed = 0;
 	ti.angle = STRAIGHTFORWARD;
+	ti.led1 = 105;
+	ti.led2 = 106;
+	ti.led3 = 108;
 
 	return ti;
 }
@@ -333,6 +324,9 @@ DriveIntoGap::twoInts DriveIntoGap::waitTurn(int odometry)
 	twoInts ti;
 	ti.angle = RIGHT_MAX;
 	ti.speed = 0;
+	ti.led1 = 105;
+	ti.led2 = 106;
+	ti.led3 = 108;
 
 	return ti;
 }
@@ -354,7 +348,7 @@ DriveIntoGap::twoInts DriveIntoGap::forwards(const sensor_msgs::LaserScan laser,
 	//60cm Lücke
 	if (gapSize == (float) 0.6)
 	{
-		for (int i = 255 - 150; i <= 255 + 150; i++) //todo vllt. Odometrie
+		for (int i = 255 - 150; i <= 255 + 150; i++)
 		{
 			if (laser.ranges[i] < 0.13)
 			{
@@ -371,7 +365,7 @@ DriveIntoGap::twoInts DriveIntoGap::forwards(const sensor_msgs::LaserScan laser,
 	//70cm Lücke
 	if (gapSize == (float) 0.7)
 	{
-		for (int i = 255 - 150; i <= 255 + 150; i++) //todo vllt. Odometrie
+		for (int i = 255 - 150; i <= 255 + 150; i++)
 		{
 			if (laser.ranges[i] < 0.17)
 			{
@@ -388,7 +382,7 @@ DriveIntoGap::twoInts DriveIntoGap::forwards(const sensor_msgs::LaserScan laser,
 	//80 cm
 	if (gapSize == (float) 0.8)
 	{
-		for (int i = 255 - 150; i <= 255 + 150; i++) //todo vllt. Odometrie
+		for (int i = 255 - 150; i <= 255 + 150; i++)
 		{
 			if (laser.ranges[i] < 0.19)
 			{
@@ -402,9 +396,10 @@ DriveIntoGap::twoInts DriveIntoGap::forwards(const sensor_msgs::LaserScan laser,
 		ti.angle = 25;
 	}
 
-
 	ti.speed = SPEED;
-
+	ti.led1 = 5;
+	ti.led2 = 6;
+	ti.led3 = 8;
 	return ti;
 }
 
@@ -420,6 +415,9 @@ DriveIntoGap::twoInts DriveIntoGap::wait4(int odometry)
 	twoInts ti;
 	ti.angle = STRAIGHTFORWARD;
 	ti.speed = 0;
+	ti.led1 = 105;
+	ti.led2 = 106;
+	ti.led3 = 108;
 
 	return ti;
 }
@@ -438,6 +436,9 @@ DriveIntoGap::twoInts DriveIntoGap::backLast(float distanceBack, int odometry)
 	twoInts ti;
 	ti.angle = STRAIGHTFORWARD;
 	ti.speed =  - SPEED;
+	ti.led1 = 5;
+	ti.led2 = 6;
+	ti.led3 = 8;
 
 	return ti;
 }

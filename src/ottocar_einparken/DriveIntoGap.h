@@ -20,6 +20,9 @@ public:
 	{
 		int angle;
 		int speed;
+		int led1;
+		int led2;
+		int led3;
 	};
 
 	DriveIntoGap();
@@ -29,7 +32,7 @@ public:
 	 * [1]: angle
 	 * [0]: speed
 	 */
-	twoInts drive(sensor_msgs::LaserScan laser, float gapSize, float distanceBack, float distanceSide, int odometry, float voltage);
+	twoInts  drive(sensor_msgs::LaserScan laser, float gapSize, float distanceBack, float distanceSide, int odometry, float voltage);
 
 private:
 

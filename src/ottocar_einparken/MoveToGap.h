@@ -22,6 +22,9 @@ public:
 	{
 		std_msgs::Int8 speed;
 		std_msgs::Int8 angle;
+		std_msgs::UInt8 led1;
+		std_msgs::UInt8 led2;
+		std_msgs::UInt8 led3;
 	};
 
 	MoveToGap();
@@ -43,7 +46,7 @@ private:
 	void waitForDistance(float, int);
 	void driveFirstHalf(int, float);
 	void driveSecondHalf(float, int);
-	int positioning(int, int, float);
+	MoveToGap::driveData positioning(int, int, int, float);
 
 
 };
