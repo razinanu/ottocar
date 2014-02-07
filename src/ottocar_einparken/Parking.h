@@ -74,6 +74,7 @@ public:
 	sensor_msgs::LaserScan g_laser;
 
 	double gapDistance;
+	ros::Time lastLaserscanTime;
 
 	int motorRevolutions;
 	RingBuffer* bufferBack;

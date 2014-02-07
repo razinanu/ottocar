@@ -32,7 +32,7 @@ const bool SEQUENCEPARK = true;
 const bool FIRSTPARK=true;
 
 //Lenkwerte
-const int STRAIGHTFORWARD =  5;
+const int STRAIGHTFORWARD =  4;
 const int LEFT_MAX = -127;
 const int RIGHT_MAX = 126;
 

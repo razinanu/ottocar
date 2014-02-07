@@ -20,6 +20,7 @@ Parking::Parking() :
 	bufferBack = new RingBuffer();
 	bufferSide = new RingBuffer();
 	lastImuTime = ros::Time::now();
+	lastLaserscanTime = ros::Time::now();
 }
 
 Parking::~Parking()
@@ -52,6 +53,7 @@ void Parking::scanValues(sensor_msgs::LaserScan laser)
 		parallel.laserScanParallel(laser);
 	}
 
+	lastLaserscanTime = ros::Time::now();
 	g_laser = laser;
 
 }
@@ -217,17 +219,16 @@ int main(int argc, char** argv)
 	ros::Rate loop_rate(LOOP_RATE);
 	while (ros::ok)
 	{
-//move to the gap
+		//move to the gap
 		if (!park.ParkingController_)
 		{
-//
 			if (park.parallel.driveEnable())
 			{
 				data = driver.moveToGap(park.g_laser,
 						park.bufferSide->getMedian(),
 						park.bufferBack->getMedian(),
 						park.gapcal.getGapDistance(), park.voltage,
-						park.motorRevolutions);
+						park.motorRevolutions, park.gapcal.gapIs);
 
 				if (data.speed.data == 0)
 				{
@@ -241,13 +242,13 @@ int main(int argc, char** argv)
 			park.angle_pub.publish(data.angle);
 			park.speed_pub.publish(data.speed);
 		}
-//drive into the gap
+		//drive into the gap
 		else if (park.ParkingController_)
 		{
 			DriveIntoGap::twoInts twoInts = park.driveIntoGap.drive(
-					park.g_laser, park.gapcal.gapIs, park.bufferBack->getMedian(),
-					park.bufferSide->getMedian(), park.motorRevolutions,
-					park.voltage);
+					park.g_laser, park.gapcal.gapIs,
+					park.bufferBack->getMedian(), park.bufferSide->getMedian(),
+					park.motorRevolutions, park.voltage);
 			park.intoGapAngle = twoInts.angle;
 			park.intoGapSpeed = twoInts.speed;
 
