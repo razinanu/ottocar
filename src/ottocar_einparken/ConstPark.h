@@ -32,13 +32,14 @@ const bool SEQUENCEPARK = true;
 const bool FIRSTPARK=true;
 
 //Lenkwerte
-const int STRAIGHTFORWARD =  7;
+const int STRAIGHTFORWARD =  5;
 const int LEFT_MAX = -127;
 const int RIGHT_MAX = 126;
 
 //Fahrwerte
 //const float REVOLUTIONS_PER_M = 1404.8;	//Laborfußboden
-const float REVOLUTIONS_PER_M = 4500.0;		//Folie
+const float REVOLUTIONS_PER_M = 4500.0;
+const int SPEED_PARKING = 19;	//todo 18 bei vollem Akku
 
 /*
  * ParallelController

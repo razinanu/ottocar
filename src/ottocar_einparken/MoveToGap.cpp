@@ -34,7 +34,7 @@ MoveToGap::driveData MoveToGap::moveToGap(sensor_msgs::LaserScan laser,
 	driveData result;
 
 	result.angle.data = STRAIGHTFORWARD;
-	result.speed.data = 8;	//todo 8
+	result.speed.data = SPEED_PARKING;	//todo 8
 
 	switch (mode)
 	{
@@ -105,7 +105,7 @@ void MoveToGap::driveSecondHalf(float dataIRside, int odometry)
 //x cm hinter der Luecke anhalten
 int MoveToGap::positioning(int odometry, int speed)
 {
-	if (drivenM(odometry) > 0.20)
+	if (drivenM(odometry) > 0.17)
 	{
 		ROS_INFO("[MTG]: hinter der Luecke angehalten: %2.4f",drivenM(odometry));
 		mode = 4;

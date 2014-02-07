@@ -65,6 +65,8 @@ public:
 	float voltage;
 	sensor_msgs::LaserScan g_laser;
 
+	double gapDistance;
+
 	int motorRevolutions;
 	RingBuffer* bufferBack;
 	RingBuffer* bufferSide;

@@ -12,7 +12,7 @@ DriveIntoGap::DriveIntoGap()
 {
 	mode = 3;
 	lastOdometry = 0;
-	SPEED = 8;
+	SPEED = SPEED_PARKING;
 }
 
 DriveIntoGap::~DriveIntoGap()
@@ -23,7 +23,7 @@ DriveIntoGap::~DriveIntoGap()
 float DriveIntoGap::drivenM(int odometry)
 {
 	//gibt die gefahrenen Distanz in m vom letzten Zeitpunkt unabhaengig von der Fahrtrichtung zurueck
-	return abs(abs(lastOdometry) - abs(odometry)) / REVOLUTIONS_PER_M;
+	return abs((lastOdometry) - (odometry)) / REVOLUTIONS_PER_M;
 }
 
 DriveIntoGap::twoInts DriveIntoGap::drive(sensor_msgs::LaserScan laser,
@@ -52,7 +52,7 @@ DriveIntoGap::twoInts DriveIntoGap::drive(sensor_msgs::LaserScan laser,
 		break;
 
 	case 7:
-		speedAndAngle = back2(distanceBack, odometry);
+		speedAndAngle = back2(distanceBack, odometry, gapSize);
 		break;
 
 	case 8:
@@ -60,11 +60,11 @@ DriveIntoGap::twoInts DriveIntoGap::drive(sensor_msgs::LaserScan laser,
 		break;
 
 	case 9:
-		speedAndAngle = waitTurn();
+		speedAndAngle = waitTurn(odometry);
 		break;
 
 	case 10:
-		speedAndAngle = forwards(laser);
+		speedAndAngle = forwards(laser, gapSize, odometry);
 		break;
 
 	case 11:
@@ -127,7 +127,7 @@ DriveIntoGap::twoInts DriveIntoGap::back1(float gapSize, int odometry)
 	{
 		if (drivenM(odometry) > 0.45)
 		{
-			ROS_INFO("[DIG]: 1. Teil Rueckwaerts: %2.4f", drivenM(odometry));
+			ROS_INFO("[DIG]: 1. Teil 60cm Rueckwaerts: %2.4f", drivenM(odometry));
 			lastTime = ros::Time::now();
 			lastOdometry = odometry;
 			mode = 6;
@@ -135,29 +135,32 @@ DriveIntoGap::twoInts DriveIntoGap::back1(float gapSize, int odometry)
 
 	}
 
-	//70 cm	- not implemented yet
+	//70 cm
 	else if (gapSize == (float) 0.7)
 	{
-		if ((lastTime + ros::Duration(1.6)) < ros::Time::now())
+		if (drivenM(odometry) > 0.43)
 		{
+			ROS_INFO("[DIG]: 1. Teil 70cm Rueckwaerts: %2.4f", drivenM(odometry));
 			lastTime = ros::Time::now();
+			lastOdometry = odometry;
 			mode = 6;
 		}
 	}
 
-	//80 cm	- not implemented yet
+	//80 cm
 	else if (gapSize == (float) 0.8)
 	{
-		if ((lastTime + ros::Duration(1.6)) < ros::Time::now())
+		if (drivenM(odometry) > 0.45)
 		{
+			ROS_INFO("[DIG]: 1. Teil 80cm Rueckwaerts: %2.4f", drivenM(odometry));
 			lastTime = ros::Time::now();
+			lastOdometry = odometry;
 			mode = 6;
 		}
 	}
 	else
 	{
 		ROS_INFO("gapSize: %2.32f", gapSize);
-		ROS_INFO("gapSize: %2.32f", (float) 0.6);
 		mode = 25;
 	}
 
@@ -183,14 +186,45 @@ DriveIntoGap::twoInts DriveIntoGap::wait2(int odometry)
 	return ti;
 }
 
-DriveIntoGap::twoInts DriveIntoGap::back2(float distanceBack, int odometry)
+DriveIntoGap::twoInts DriveIntoGap::back2(float distanceBack, int odometry, float gapSize)
 {
-	if (distanceBack < 0.12 || (lastTime + ros::Duration(3)) < ros::Time::now())
+	//60 cm
+	if (gapSize == (float) 0.6)
 	{
-		ROS_INFO("[DIG]: in die Luecke gefahren: %2.4f", distanceBack);
-		ROS_INFO("[DIG]: --> gefahrene Strecke: %2.4f", drivenM(odometry));
-		lastTime = ros::Time::now();
-		mode = 8;
+		if (distanceBack < 0.12
+				|| (lastTime + ros::Duration(5)) < ros::Time::now()) //todo 0.12
+		{
+			ROS_INFO("[DIG]: in die Luecke gefahren: %2.4f", distanceBack);
+			ROS_INFO("[DIG]: --> gefahrene Strecke: %2.4f", drivenM(odometry));
+			lastTime = ros::Time::now();
+			mode = 8;
+		}
+	}
+
+	//70 cm
+	if (gapSize == (float) 0.7)
+	{
+		if (distanceBack < 0.16
+				|| (lastTime + ros::Duration(5)) < ros::Time::now()) //todo 0.12
+		{
+			ROS_INFO("[DIG]: in die Luecke gefahren: %2.4f", distanceBack);
+			ROS_INFO("[DIG]: --> gefahrene Strecke: %2.4f", drivenM(odometry));
+			lastTime = ros::Time::now();
+			mode = 8;
+		}
+	}
+
+	//80 cm
+	if (gapSize == (float) 0.8)
+	{
+		if (distanceBack < 0.15
+				|| (lastTime + ros::Duration(5)) < ros::Time::now()) //todo 0.12
+		{
+			ROS_INFO("[DIG]: in die Luecke gefahren: %2.4f", distanceBack);
+			ROS_INFO("[DIG]: --> gefahrene Strecke: %2.4f", drivenM(odometry));
+			lastTime = ros::Time::now();
+			mode = 8;
+		}
 	}
 
 	twoInts ti;
@@ -214,11 +248,12 @@ DriveIntoGap::twoInts DriveIntoGap::wait3()
 	return ti;
 }
 
-DriveIntoGap::twoInts DriveIntoGap::waitTurn()
+DriveIntoGap::twoInts DriveIntoGap::waitTurn(int odometry)
 {
 	if ((lastTime + ros::Duration(0.2)) < ros::Time::now())
 	{
 		lastTime = ros::Time::now();
+		lastOdometry = odometry;
 		mode = 10;
 	}
 
@@ -229,7 +264,7 @@ DriveIntoGap::twoInts DriveIntoGap::waitTurn()
 	return ti;
 }
 
-DriveIntoGap::twoInts DriveIntoGap::forwards(const sensor_msgs::LaserScan laser)
+DriveIntoGap::twoInts DriveIntoGap::forwards(const sensor_msgs::LaserScan laser, float gapSize, int odometry)
 {
 	twoInts ti;
 	ti.angle = STRAIGHTFORWARD;
@@ -243,18 +278,41 @@ DriveIntoGap::twoInts DriveIntoGap::forwards(const sensor_msgs::LaserScan laser)
 		return ti;
 	}
 
-	for (int i = 255 - 50; i <= 255 + 150; i++)
+	//60cm Lücke
+	if (gapSize == (float) 0.6)
 	{
-		if (laser.ranges[i] < 0.10)
+		for (int i = 255 - 150; i <= 255 + 150; i++) //todo vllt. Odometrie
 		{
-			ROS_INFO("[DIG]: nach vorne gefahren: %2.4f | i: %d", laser.ranges[i], i);
-			lastTime = ros::Time::now();
-			mode = 11;
-			return ti;
+			if (laser.ranges[i] < 0.10)
+			{
+				ROS_INFO(
+						"[DIG]: nach vorne gefahren: %2.4f | i: %d", laser.ranges[i], i);
+				lastTime = ros::Time::now();
+				mode = 11;
+				return ti;
+			}
 		}
+		ti.angle = RIGHT_MAX;
 	}
 
-	ti.angle = RIGHT_MAX;
+	//70cm Lücke
+	if (gapSize == (float) 0.7)
+	{
+		for (int i = 255 - 150; i <= 255 + 150; i++) //todo vllt. Odometrie
+		{
+			if (laser.ranges[i] < 0.16)
+			{
+				ROS_INFO(
+						"[DIG]: nach vorne gefahren: %2.4f | i: %d", laser.ranges[i], i);
+				lastTime = ros::Time::now();
+				mode = 11;
+				return ti;
+			}
+		}
+		ti.angle = STRAIGHTFORWARD;
+	}
+
+
 	ti.speed = SPEED;
 
 	return ti;
@@ -280,9 +338,10 @@ DriveIntoGap::twoInts DriveIntoGap::backLast(float distanceBack, int odometry)
 {
 	//todo das auto faehrt nicht an
 
-	if (drivenM(odometry) > 0.10 || distanceBack < 11)
+	if (drivenM(odometry) > 0.15 || distanceBack < 11)
 	{
 		ROS_INFO("[DIG]: kurzes Stueck zurueckgesetzt: %2.4f",distanceBack);
+		ROS_INFO("[DIG]: gefahrene Odometrie: %2.4f",drivenM(odometry));
 		lastTime = ros::Time::now();
 		mode = 13;
 	}
