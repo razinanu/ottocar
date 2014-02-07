@@ -37,6 +37,10 @@ private:
 	ros::Time gapBegin;
 	ros::Time distanceFound;
 	ros::Time lastTime;
+
+	bool blinkerOn;
+	ros::Time lastTimeBlinkerChange;
+
 	int mode;
 	float distanceToDrive;
 
@@ -44,9 +48,9 @@ private:
 	float drivenM(int odometry);
 
 	void waitForDistance(float, int);
-	void driveFirstHalf(int, float);
-	void driveSecondHalf(float, int);
-	MoveToGap::driveData positioning(int, int, int, float);
+	driveData driveFirstHalf(int, float, int, int);
+	driveData driveSecondHalf(float, int, int, int);
+	driveData positioning(int, int, int, float);
 
 
 };

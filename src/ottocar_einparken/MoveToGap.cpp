@@ -15,6 +15,9 @@ MoveToGap::MoveToGap()
 	mode = 0;
 	lastOdometry = 0;
 	distanceToDrive = 0;
+
+	lastTimeBlinkerChange = ros::Time::now() - ros::Duration(2);
+	blinkerOn = false;
 }
 
 MoveToGap::~MoveToGap()
@@ -43,11 +46,11 @@ MoveToGap::driveData MoveToGap::moveToGap(sensor_msgs::LaserScan laser,
 		break;
 
 	case 1:
-		driveFirstHalf(odometry, dataIRside);
+		result = driveFirstHalf(odometry, dataIRside, result.speed.data, result.angle.data);
 		break;
 
 	case 2:
-		driveSecondHalf(dataIRside, odometry);
+		result = driveSecondHalf(dataIRside, odometry, result.speed.data, result.angle.data);
 		break;
 
 	case 3:
@@ -79,8 +82,11 @@ void MoveToGap::waitForDistance(float distanceToGap, int odometry)
 }
 
 //fahre bis zur Mitte der Lücke
-void MoveToGap::driveFirstHalf(int odometry, float dataIRside)
+MoveToGap::driveData MoveToGap::driveFirstHalf(int odometry, float dataIRside, int speed, int angle)
 {
+	//bei dem Rückgabewert nur die LEDs betrachten!
+	driveData result;
+
 	if (drivenM(odometry) > distanceToDrive - 0.1)
 	{
 		if (dataIRside > 0.2)
@@ -92,17 +98,79 @@ void MoveToGap::driveFirstHalf(int odometry, float dataIRside)
 
 		mode = 2;
 	}
+
+	if (!blinkerOn && lastTimeBlinkerChange + ros::Duration(0.5) < ros::Time::now())
+	{
+		result.led1.data = 100;
+		result.led2.data = 107;
+		blinkerOn = true;
+		lastTimeBlinkerChange = ros::Time::now();
+	}
+	else if (!blinkerOn && lastTimeBlinkerChange + ros::Duration(0.5) > ros::Time::now())
+	{
+		result.led1.data = 0;
+		result.led2.data = 7;
+	}
+
+	if (blinkerOn && lastTimeBlinkerChange + ros::Duration(0.5) < ros::Time::now())
+	{
+		result.led1.data = 0;
+		result.led2.data = 7;
+		blinkerOn = false;
+		lastTimeBlinkerChange = ros::Time::now();
+	}
+	else if (blinkerOn && lastTimeBlinkerChange + ros::Duration(0.5) > ros::Time::now())
+	{
+		result.led1.data = 100;
+		result.led2.data = 107;
+	}
+	result.angle.data = angle;
+	result.speed.data = speed;
+	return result;
 }
 
 //auf das Ende der Luecke warten, bis der  IR-Sensor den Karton sieht
-void MoveToGap::driveSecondHalf(float dataIRside, int odometry)
+MoveToGap::driveData MoveToGap::driveSecondHalf(float dataIRside, int odometry, int speed, int angle)
 {
+	//bei dem Rückgabewert nur die LEDs betrachten!
+	driveData result;
+
 	if (dataIRside < 0.2)
 	{
 		gapBegin = ros::Time::now();
 		lastOdometry = odometry;
 		mode = 3;
 	}
+
+	if (!blinkerOn && lastTimeBlinkerChange + ros::Duration(0.5) < ros::Time::now())
+	{
+		result.led1.data = 100;
+		result.led2.data = 107;
+		blinkerOn = true;
+		lastTimeBlinkerChange = ros::Time::now();
+	}
+	else if (!blinkerOn && lastTimeBlinkerChange + ros::Duration(0.5) > ros::Time::now())
+	{
+		result.led1.data = 0;
+		result.led2.data = 7;
+	}
+
+	if (blinkerOn && lastTimeBlinkerChange + ros::Duration(0.5) < ros::Time::now())
+	{
+		result.led1.data = 0;
+		result.led2.data = 7;
+		blinkerOn = false;
+		lastTimeBlinkerChange = ros::Time::now();
+	}
+	else if (blinkerOn && lastTimeBlinkerChange + ros::Duration(0.5) > ros::Time::now())
+	{
+		result.led1.data = 100;
+		result.led2.data = 107;
+	}
+
+	result.angle.data = angle;
+	result.speed.data = speed;
+	return result;
 }
 
 //x cm hinter der Luecke anhalten
@@ -139,9 +207,19 @@ MoveToGap::driveData MoveToGap::positioning(int odometry, int speed, int angle, 
 
 	result.speed.data = speed;
 	result.angle.data = angle;
-	result.led1.data = 5;
-	result.led2.data = 6;
-	result.led3.data = 8;
+
+	if (blinkerOn && lastTimeBlinkerChange + ros::Duration(0.5) < ros::Time::now())
+	{
+		result.led1.data = 0;
+		result.led2.data = 7;
+		blinkerOn = false;
+		lastTimeBlinkerChange = ros::Time::now();
+	}
+	else if (blinkerOn && lastTimeBlinkerChange + ros::Duration(0.5) > ros::Time::now())
+	{
+		result.led1.data = 100;
+		result.led2.data = 107;
+	}
 	return result;
 }
 
