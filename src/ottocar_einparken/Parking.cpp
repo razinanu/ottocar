@@ -79,37 +79,6 @@ float Parking::linearizeBack(float value)
 	{
 		return 0.4;
 	}
-
-// if (value > 0.1)
-// {
-// return 0.1194 / (value + 0.028);
-// }
-// else
-// {
-// return 0.4;
-// }
-
-//diese Berechnung hat einen Sprung zwischen 10 und 15cm
-// float error = 40.0;
-//
-//// drei geraden zur annaeherung an die funktion
-// if (value > 1.25 && value < 4.0)
-// {
-// return (1 / (-1.45 / 6)) * value + (432 / 29);
-// }
-// else if (value > 0.8)
-// {
-// return (1 / (-1.45 / 6)) * value + (432 / 29);
-// }
-// else if (value > 0.3)
-// {
-// return (1 / (-0.075)) * value + (80 / 3);
-// }
-// else
-// {
-//// ROS_INFO("[PAR]: linearlize of %f", value);
-// return error;
-// }
 }
 
 float Parking::linearizeSide(float value)
@@ -124,15 +93,6 @@ float Parking::linearizeSide(float value)
 	{
 		return 0.4;
 	}
-
-// if (value > 0.1)
-// {
-// return 0.1128 / (value - 0.124);
-// }
-// else
-// {
-// return 0.4;
-// }
 }
 
 void Parking::ir1Values(std_msgs::Float32 sensor)
