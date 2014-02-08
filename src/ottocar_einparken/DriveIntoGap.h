@@ -58,11 +58,13 @@ public:
 	 */
 	driveData  drive(sensor_msgs::LaserScan laser, float gapSize, float distanceBack, float distanceSide, int odometry, float voltage, float distanceToGap, float dataIRside);
 
+
+	int mode;
+
 private:
 
 	//float timeToDrive;
 	ros::Time lastTime;
-	int mode;
 	int lastOdometry;
 	int SPEED;
 

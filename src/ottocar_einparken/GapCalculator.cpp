@@ -11,7 +11,7 @@
 laserState currentSearchState = start;
 
 GapCalculator::GapCalculator() :
-						Pi(3.14159265), gapDistance(-1),gapIs(-1), parkEnable(false)
+								Pi(3.14159265), gapDistance(-1),gapIs(-1), parkEnable(false),smallGap(true),largeGap(true),mediumGap(true)
 {
 	HDistance = -1;
 	baseHDistance = -1;
@@ -26,24 +26,25 @@ GapCalculator::GapCalculator() :
 bool GapCalculator::testGap(double space)
 {
 	if (SMALLGAP - 0.05 <= space && space < SMALLGAP + 0.02
-			&& minVDistance < 1.00)
+			&& smallGap && minVDistance < 1.00)
 	{
 		gapIs = 0.60;
+
 		parkEnable = true;
 		return true;
 
 	}
 	else if (MEDIUMGAP - 0.07 <= space && space < MEDIUMGAP + 0.02
-			&& minVDistance < 1.00)
+			&& mediumGap&&minVDistance < 1.00)
 	{
-		gapIs =0.70;
+		gapIs = 0.70;
 		parkEnable = true;
 		return true;
 	}
-	else if (LARGGAP - 0.07 <= space && space <= LARGGAP + 0.02
-			&& minVDistance < 1.00)
+	else if (LARGEGAP - 0.07 <= space && space <= LARGEGAP + 0.02
+			&& largeGap&&minVDistance < 1.00)
 	{
-		gapIs =0.80;
+		gapIs = 0.80;
 		parkEnable = false;
 		return true;
 	}
@@ -152,6 +153,26 @@ laserState GapCalculator::calculateBase(laserState currentSearchState, const sen
 
 	return currentSearchState;
 }
+void GapCalculator::foundGap(){
+	if(gapIs == 0.6)
+	{
+		largeGap=false;
+		mediumGap=false;
+
+	}
+	else if(gapIs == 0.7)
+	{
+
+		largeGap=false;
+		smallGap=false;
+	}
+	else if(gapIs == 0.8)
+	{
+		smallGap=false;
+		mediumGap=false;
+
+	}
+}
 
 laserState GapCalculator::calculateMax(laserState currentSearchState, const sensor_msgs::LaserScan laser, int index)
 {
@@ -189,9 +210,13 @@ laserState GapCalculator::calculateMin(laserState currentSearchState, const sens
 			{
 				if (testGap(space))
 				{
+					ROS_INFO("gapSize: %f", space);
+
 					if (FIRSTPARK)
 					{
+						foundGap();
 						gapDistance = minVDistance;
+
 					}
 					else if (parkEnable)
 					{

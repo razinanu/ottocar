@@ -25,14 +25,14 @@ const float FIRSTDISTANCE = 0.2;
 const float BESTGAPLENGTH = 0.6;
 const float SMALLGAP = 0.6;
 const float MEDIUMGAP = 0.7;
-const float LARGGAP = 0.8;
+const float LARGEGAP = 0.8;
 /**\brief parking by sequence **/
 const bool SEQUENCEPARK = true;
 /**\brief parking in fist gap**/
 const bool FIRSTPARK=true;
 
 //Lenkwerte
-const int STRAIGHTFORWARD =  4;
+const int STRAIGHTFORWARD =  6;
 const int LEFT_MAX = -127;
 const int RIGHT_MAX = 126;
 

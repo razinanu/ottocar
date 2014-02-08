@@ -285,7 +285,7 @@ DriveIntoGap::driveData DriveIntoGap::back2(const sensor_msgs::LaserScan laser,
 			}
 		}
 
-		if (minValue > 0.16 && minValue < 1 && drivenM(odometry) > 0.22)
+		if (minValue > 0.16 && minValue < 0.4 && drivenM(odometry) > 0.22)
 		{
 			ROS_WARN("[DIG]: in Luecke mit Laserscanner gefahren: %2.4f",
 					minValue);
@@ -315,7 +315,7 @@ DriveIntoGap::driveData DriveIntoGap::back2(const sensor_msgs::LaserScan laser,
 			}
 		}
 
-		if (minValue > 0.17 && minValue < 1 && drivenM(odometry) > 0.25)
+		if (minValue > 0.17 && minValue < 0.4 && drivenM(odometry) > 0.25)
 		{
 			ROS_WARN("[DIG]: in Luecke mit Laserscanner gefahren: %2.4f",
 					minValue);
@@ -345,7 +345,7 @@ DriveIntoGap::driveData DriveIntoGap::back2(const sensor_msgs::LaserScan laser,
 			}
 		}
 
-		if (minValue > 0.18 && minValue < 1 && drivenM(odometry) > 0.25)
+		if (minValue > 0.18 && minValue < 0.4 && drivenM(odometry) > 0.25)
 		{
 			ROS_WARN("[DIG]: in Luecke mit Laserscanner gefahren: %2.4f",
 					minValue);

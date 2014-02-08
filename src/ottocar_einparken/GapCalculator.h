@@ -15,6 +15,10 @@ enum laserState
 {
 	start, calculateBaseRange, calculateMaxPoint, calculateMinPoint, end
 };
+enum GAPSIZE{
+	def,sGAP,mGAP,lGAP,
+
+};
 
 /**\brief
  * To detect the Gap, at first searching the first corner of Obstacle, which has
@@ -32,7 +36,7 @@ private:
 			baseRange, angle, minVDistance, HDistance, gapDistance;
 	double Pi;
 
-	bool parkEnable;
+	bool parkEnable,smallGap,mediumGap,largeGap;
 	/**\brief if for parking just consider the length of Gap
 	 * \param double space the length of gap
 	 * **/
@@ -43,6 +47,7 @@ private:
 	void calculateAverageValue(const sensor_msgs::LaserScan laser, int i);
 
 	bool testGap(double space);
+	void foundGap();
 
 	laserState startState(laserState);
 	laserState calculateBase(laserState, const sensor_msgs::LaserScan, int);

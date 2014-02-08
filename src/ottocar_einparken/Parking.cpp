@@ -115,7 +115,7 @@ void Parking::init()
 {
 	angle_pub = parkingNode.advertise<std_msgs::Int8>("angle_cmd", 1);
 	speed_pub = parkingNode.advertise<std_msgs::Int8>("speed_cmd", 1);
-	led_pub = parkingNode.advertise<std_msgs::UInt8>("led_set", 10);
+	led_pub = parkingNode.advertise<std_msgs::UInt8>("led_set", 20);
 
 	hokuyoSubscriber = parkingNode.subscribe("/scan", 1, &Parking::scanValues,
 			this);
@@ -267,6 +267,12 @@ int main(int argc, char** argv)
 //		//drive into the gap
 //		else if (park.ParkingController_)
 //		{
+
+		if (park.driveIntoGap.mode == 2)
+		{
+			park.ParkingController_ = true;
+		}
+
 			DriveIntoGap::driveData data = park.driveIntoGap.drive(
 					park.g_laser, park.gapcal.gapIs,
 					park.bufferBack->getMedian(), park.bufferSide->getMedian(),
