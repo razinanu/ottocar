@@ -25,6 +25,8 @@ DriveIntoGap::DriveIntoGap()
 	 ledScheinwerferVorneRechts = false;
 	 ledScheinwerferVorneLinks = false;
 	 ledBremse = false;
+
+	 foundGapSice = 0;
 }
 
 DriveIntoGap::~DriveIntoGap()
@@ -49,7 +51,7 @@ DriveIntoGap::driveData DriveIntoGap::drive(sensor_msgs::LaserScan laser,
 	switch (mode)
 	{
 	case 0:
-		speedAndAngle = waitForDistance(distanceToGap, odometry);
+		speedAndAngle = waitForDistance(distanceToGap, odometry, gapSize);
 		break;
 
 	case 1:
@@ -61,7 +63,7 @@ DriveIntoGap::driveData DriveIntoGap::drive(sensor_msgs::LaserScan laser,
 		break;
 
 	case 3:
-		speedAndAngle = positioning(odometry, gapSize);
+		speedAndAngle = positioning(odometry, foundGapSice);
 		break;
 
 	case 4:
@@ -69,7 +71,7 @@ DriveIntoGap::driveData DriveIntoGap::drive(sensor_msgs::LaserScan laser,
 		break;
 
 	case 5:
-		speedAndAngle = back1(gapSize, odometry);
+		speedAndAngle = back1(foundGapSice, odometry);
 		break;
 
 	case 6:
@@ -77,7 +79,7 @@ DriveIntoGap::driveData DriveIntoGap::drive(sensor_msgs::LaserScan laser,
 		break;
 
 	case 7:
-		speedAndAngle = back2(laser, distanceBack, odometry, gapSize);
+		speedAndAngle = back2(laser, distanceBack, odometry, foundGapSice);
 		break;
 
 	case 8:
@@ -89,7 +91,7 @@ DriveIntoGap::driveData DriveIntoGap::drive(sensor_msgs::LaserScan laser,
 		break;
 
 	case 10:
-		speedAndAngle = forwards(laser, gapSize, odometry);
+		speedAndAngle = forwards(laser, foundGapSice, odometry);
 		break;
 
 	case 11:
@@ -513,10 +515,11 @@ ledBremse = false;
 //neu
 
 //warte auf eine Distanz
-DriveIntoGap::driveData DriveIntoGap::waitForDistance(float distanceToGap, int odometry)
+DriveIntoGap::driveData DriveIntoGap::waitForDistance(float distanceToGap, int odometry, float gapSize)
 {
 	if (distanceToGap > 0 && distanceToGap < 1.0) //todo ab wann den Wert akzeptieren?
 	{
+		foundGapSice = gapSize;
 		distanceToDrive = distanceToGap;
 		lastOdometry = odometry;
 		mode = 1;
