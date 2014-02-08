@@ -226,7 +226,7 @@ int main(int argc, char** argv)
 		return -1;
 	}
 
-	MoveToGap::driveData data;
+	DriveIntoGap::driveData data;
 	ros::Rate loop_rate(100);//LOOP_RATE);
 
 	data.angle.data = 0;
