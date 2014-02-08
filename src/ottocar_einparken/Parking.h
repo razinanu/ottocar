@@ -24,8 +24,6 @@
 #include "ConstPark.h"
 #include "ParallelController.h"
 #include "DriveIntoGap.h"
-#include "MoveToGap.h"
-#include "Orientation.h"
 
 #include "RingBuffer.h"
 
@@ -54,7 +52,6 @@ public:
 	GapCalculator gapcal;
 	ParallelController parallel;
 	DriveIntoGap driveIntoGap;
-	Orientation orient;
 
 	ros::Publisher angle_pub;
 	ros::Publisher speed_pub;

@@ -80,10 +80,10 @@ private:
 	driveData wait4(int odometry);
 	driveData backLast(float distanceBack, int odometry);
 
-	driveData waitForDistance(float distanceToGap, int odometry, int speed, int angle);
-	driveData driveFirstHalf(int odometry, float dataIRside, int speed, int angle);
-	driveData driveSecondHalf(float dataIRside, int odometry, int speed, int angle);
-	driveData positioning(int odometry, int speed, int angle, float gapSize);
+	driveData waitForDistance(float distanceToGap, int odometry);
+	driveData driveFirstHalf(int odometry, float dataIRside);
+	driveData driveSecondHalf(float dataIRside, int odometry);
+	driveData positioning(int odometry, float gapSize);
 
 	bool blinkerOn;
 	ros::Time lastTimeBlinkerChange;

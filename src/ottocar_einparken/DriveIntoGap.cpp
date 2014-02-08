@@ -10,7 +10,7 @@
 
 DriveIntoGap::DriveIntoGap()
 {
-	mode = 3;
+	mode = 0;
 	lastOdometry = 0;
 	SPEED = SPEED_PARKING;
 	blinkDone = false;
@@ -49,19 +49,19 @@ DriveIntoGap::driveData DriveIntoGap::drive(sensor_msgs::LaserScan laser,
 	switch (mode)
 	{
 	case 0:
-		speedAndAngle = waitForDistance(distanceToGap, odometry, speedAndAngle.speed.data, speedAndAngle.angle.data);
+		speedAndAngle = waitForDistance(distanceToGap, odometry);
 		break;
 
 	case 1:
-		speedAndAngle = driveFirstHalf(odometry, dataIRside, speedAndAngle.speed.data, speedAndAngle.angle.data);
+		speedAndAngle = driveFirstHalf(odometry, dataIRside);
 		break;
 
 	case 2:
-		speedAndAngle = driveSecondHalf(dataIRside, odometry, speedAndAngle.speed.data, speedAndAngle.angle.data);
+		speedAndAngle = driveSecondHalf(dataIRside, odometry);
 		break;
 
 	case 3:
-		speedAndAngle = positioning(odometry, speedAndAngle.speed.data, speedAndAngle.angle.data, gapSize);
+		speedAndAngle = positioning(odometry, gapSize);
 		break;
 
 	case 4:
@@ -149,7 +149,6 @@ DriveIntoGap::driveData DriveIntoGap::drive(sensor_msgs::LaserScan laser,
 		speedAndAngle.led6.data = 106;
 		speedAndAngle.led8.data = 108;
 	}
-
 
 	return speedAndAngle;
 }
@@ -514,7 +513,7 @@ ledBremse = false;
 //neu
 
 //warte auf eine Distanz
-DriveIntoGap::driveData DriveIntoGap::waitForDistance(float distanceToGap, int odometry, int speed, int angle)
+DriveIntoGap::driveData DriveIntoGap::waitForDistance(float distanceToGap, int odometry)
 {
 	if (distanceToGap > 0 && distanceToGap < 1.0) //todo ab wann den Wert akzeptieren?
 	{
@@ -523,14 +522,14 @@ DriveIntoGap::driveData DriveIntoGap::waitForDistance(float distanceToGap, int o
 		mode = 1;
 	}
 	driveData result;
-	result.angle.data = angle;
-	result.speed.data = speed;
+	result.angle.data = STRAIGHTFORWARD;
+	result.speed.data = SPEED_PARKING;
 	ledBremse = false;
 	return result;
 }
 
 //fahre bis zur Mitte der Lücke
-DriveIntoGap::driveData DriveIntoGap::driveFirstHalf(int odometry, float dataIRside, int speed, int angle)
+DriveIntoGap::driveData DriveIntoGap::driveFirstHalf(int odometry, float dataIRside)
 {
 	//bei dem Rückgabewert nur die LEDs betrachten!
 	driveData result;
@@ -561,13 +560,13 @@ DriveIntoGap::driveData DriveIntoGap::driveFirstHalf(int odometry, float dataIRs
 		lastTimeBlinkerChange = ros::Time::now();
 	}
 
-	result.angle.data = angle;
-	result.speed.data = speed;
+	result.angle.data = STRAIGHTFORWARD;
+	result.speed.data = SPEED_PARKING;
 	return result;
 }
 
 //auf das Ende der Luecke warten, bis der  IR-Sensor den Karton sieht
-DriveIntoGap::driveData DriveIntoGap::driveSecondHalf(float dataIRside, int odometry, int speed, int angle)
+DriveIntoGap::driveData DriveIntoGap::driveSecondHalf(float dataIRside, int odometry)
 {
 	//bei dem Rückgabewert nur die LEDs betrachten!
 	driveData result;
@@ -593,13 +592,13 @@ DriveIntoGap::driveData DriveIntoGap::driveSecondHalf(float dataIRside, int odom
 		lastTimeBlinkerChange = ros::Time::now();
 	}
 
-	result.angle.data = angle;
-	result.speed.data = speed;
+	result.angle.data = STRAIGHTFORWARD;
+	result.speed.data = SPEED_PARKING;
 	return result;
 }
 
 //x cm hinter der Luecke anhalten
-DriveIntoGap::driveData DriveIntoGap::positioning(int odometry, int speed, int angle, float gapSize)
+DriveIntoGap::driveData DriveIntoGap::positioning(int odometry, float gapSize)
 {
 	driveData result;
 
@@ -609,7 +608,7 @@ DriveIntoGap::driveData DriveIntoGap::positioning(int odometry, int speed, int a
 		lastTime = ros::Time::now();
 		mode = 4;
 		result.speed.data = 0;
-		result.angle.data = angle;
+		result.angle.data = STRAIGHTFORWARD;
 		ledBremse = true;
 		return result;
 	}
@@ -622,7 +621,7 @@ DriveIntoGap::driveData DriveIntoGap::positioning(int odometry, int speed, int a
 			lastTime = ros::Time::now();
 			mode = 4;
 			result.speed.data = 0;
-			result.angle.data = angle;
+			result.angle.data = STRAIGHTFORWARD;
 			ledBremse = true;
 			return result;
 		}
@@ -642,8 +641,8 @@ DriveIntoGap::driveData DriveIntoGap::positioning(int odometry, int speed, int a
 		lastTimeBlinkerChange = ros::Time::now();
 	}
 
-	result.speed.data = speed;
-	result.angle.data = angle;
+	result.speed.data = SPEED_PARKING;
+	result.angle.data = STRAIGHTFORWARD;
 
 	return result;
 }

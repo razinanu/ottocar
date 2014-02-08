@@ -193,8 +193,7 @@ int main(int argc, char** argv)
 
 	ros::spinOnce();
 
-	MoveToGap::driveData data;
-	MoveToGap driver;
+	DriveIntoGap::driveData data;
 
 	//Bremslicht an
 	data.led1.data = 105;
@@ -203,6 +202,12 @@ int main(int argc, char** argv)
 	park.led_pub.publish(data.led1);
 	park.led_pub.publish(data.led2);
 	park.led_pub.publish(data.led3);
+
+	//Scheinwerfer an
+	data.led2.data = 101;
+	data.led3.data = 102;
+	park.led_pub.publish(data.led1);
+	park.led_pub.publish(data.led2);
 
 	data.angle.data = 0;
 	park.angle_pub.publish(data.angle);
@@ -222,6 +227,12 @@ int main(int argc, char** argv)
 
 	//licht aus
 	park.allLightsOff(); // TODO auskommentieren
+
+	//Scheinwerfer an
+	data.led2.data = 101;
+	data.led3.data = 102;
+	park.led_pub.publish(data.led1);
+	park.led_pub.publish(data.led2);
 
 	park.count = 0;
 
