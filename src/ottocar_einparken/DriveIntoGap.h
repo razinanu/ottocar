@@ -80,7 +80,7 @@ private:
 	driveData wait4(int odometry);
 	driveData backLast(float distanceBack, int odometry);
 
-	driveData waitForDistance(float distanceToGap, int odometry);
+	driveData waitForDistance(float distanceToGap, int odometry, float gapSize);
 	driveData driveFirstHalf(int odometry, float dataIRside);
 	driveData driveSecondHalf(float dataIRside, int odometry);
 	driveData positioning(int odometry, float gapSize);
@@ -89,6 +89,8 @@ private:
 	ros::Time lastTimeBlinkerChange;
 	float distanceToDrive;
 	ros::Time gapBegin;
+
+	float foundGapSice;
 
 	bool ledBlinkerRechts;
 	bool ledBlinkerLinks;
