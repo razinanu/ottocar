@@ -210,7 +210,9 @@ int main(int argc, char** argv)
 	park.led_pub.publish(data.led2);
 
 	data.angle.data = 0;
+	data.speed.data = 0;
 	park.angle_pub.publish(data.angle);
+	park.speed_pub.publish(data.speed);
 	ros::Duration(0.4).sleep();
 
 	data.angle.data = -90;
@@ -218,7 +220,9 @@ int main(int argc, char** argv)
 	ros::Duration(0.4).sleep();
 
 	data.angle.data = 0;
+	data.speed.data = 0;
 	park.angle_pub.publish(data.angle);
+	park.speed_pub.publish(data.speed);
 	ros::Duration(0.4).sleep();
 
 	ROS_INFO("[PAR]: Parking gestartet");
