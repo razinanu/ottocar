@@ -517,7 +517,8 @@ ledBremse = false;
 //warte auf eine Distanz
 DriveIntoGap::driveData DriveIntoGap::waitForDistance(float distanceToGap, int odometry, float gapSize)
 {
-	if (distanceToGap > 0 && distanceToGap < 1.0) //todo ab wann den Wert akzeptieren?
+	//wenn eine Lücke akzeptiert wurde, wird auch die Größe der Lücke gespeichert
+	if (distanceToGap > 0 && distanceToGap < 1.0)
 	{
 		foundGapSice = gapSize;
 		distanceToDrive = distanceToGap;

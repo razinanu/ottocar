@@ -273,13 +273,17 @@ int main(int argc, char** argv)
 			park.ParkingController_ = true;
 		}
 
-			DriveIntoGap::driveData data = park.driveIntoGap.drive(
-					park.g_laser, park.gapcal.gapIs,
-					park.bufferBack->getMedian(), park.bufferSide->getMedian(),
-					park.motorRevolutions, park.voltage, park.gapcal.getGapDistance(), park.bufferSide->getMedian());
+		DriveIntoGap::driveData data = park.driveIntoGap.drive(park.g_laser,
+				park.gapcal.gapIs, park.bufferBack->getMedian(),
+				park.bufferSide->getMedian(), park.motorRevolutions,
+				park.voltage, park.gapcal.getGapDistance(),
+				park.bufferSide->getMedian());
 
-			park.angle_pub.publish(data.angle);
-			park.speed_pub.publish(data.speed);
+		park.angle_pub.publish(data.angle);
+		park.speed_pub.publish(data.speed);
+
+		if (!park.driveIntoGap.blinkDone)
+		{
 			park.led_pub.publish(data.led0);
 			park.led_pub.publish(data.led1);
 			park.led_pub.publish(data.led2);
@@ -289,8 +293,8 @@ int main(int argc, char** argv)
 			park.led_pub.publish(data.led6);
 			park.led_pub.publish(data.led7);
 			park.led_pub.publish(data.led8);
+		}
 
-//		}
 		// 3-maliges Blinken - Parken fertig!
 		if (park.driveIntoGap.blinkDone) // todo test
 		{
@@ -298,6 +302,13 @@ int main(int argc, char** argv)
 			{
 				park.finishedParkLed();
 			}
+
+			data.led5.data = 105;
+			data.led6.data = 106;
+			data.led8.data = 108;
+			park.led_pub.publish(data.led5);
+			park.led_pub.publish(data.led6);
+			park.led_pub.publish(data.led8);
 		}
 		ros::spinOnce();
 		loop_rate.sleep();
