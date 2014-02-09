@@ -115,7 +115,7 @@ void Parking::init()
 {
 	angle_pub = parkingNode.advertise<std_msgs::Int8>("angle_cmd", 1);
 	speed_pub = parkingNode.advertise<std_msgs::Int8>("speed_cmd", 1);
-	led_pub = parkingNode.advertise<std_msgs::UInt8>("led_set", 20);
+	led_pub = parkingNode.advertise<std_msgs::UInt8>("led_set", 30);
 
 	hokuyoSubscriber = parkingNode.subscribe("/scan", 1, &Parking::scanValues,
 			this);
@@ -191,8 +191,6 @@ int main(int argc, char** argv)
 		return -1;
 	}
 
-	ros::spinOnce();
-
 	DriveIntoGap::driveData data;
 
 	//Bremslicht an
@@ -240,6 +238,8 @@ int main(int argc, char** argv)
 
 	park.count = 0;
 
+	ros::spinOnce();
+
 	while (ros::ok)
 	{
 //		//move to the gap
@@ -286,7 +286,7 @@ int main(int argc, char** argv)
 		park.angle_pub.publish(data.angle);
 		park.speed_pub.publish(data.speed);
 
-		if (!park.driveIntoGap.blinkDone)
+		if (park.driveIntoGap.ledChanged)
 		{
 			park.led_pub.publish(data.led0);
 			park.led_pub.publish(data.led1);
@@ -297,23 +297,35 @@ int main(int argc, char** argv)
 			park.led_pub.publish(data.led6);
 			park.led_pub.publish(data.led7);
 			park.led_pub.publish(data.led8);
+			park.driveIntoGap.ledChanged = false;
 		}
 
-		// 3-maliges Blinken - Parken fertig!
-		if (park.driveIntoGap.blinkDone) // todo test
+		// Programm fertig; LEDs ausschalten
+		if (park.driveIntoGap.blinkDone)
 		{
-			if (park.count < 3)
-			{
-				park.finishedParkLed();
-			}
-
-			data.led5.data = 105;
-			data.led6.data = 106;
-			data.led8.data = 108;
+			data.led0.data = 0;
+			data.led1.data = 1;
+			data.led2.data = 2;
+			data.led3.data = 3;
+			data.led4.data = 4;
+			data.led5.data = 5;
+			data.led6.data = 6;
+			data.led7.data = 7;
+			data.led8.data = 8;
+			park.led_pub.publish(data.led0);
+			park.led_pub.publish(data.led1);
+			park.led_pub.publish(data.led2);
+			park.led_pub.publish(data.led3);
+			park.led_pub.publish(data.led4);
 			park.led_pub.publish(data.led5);
 			park.led_pub.publish(data.led6);
+			park.led_pub.publish(data.led7);
 			park.led_pub.publish(data.led8);
+
+			ROS_WARN("[PAR]: Parking beendet :)");
+			return 0;
 		}
+
 		ros::spinOnce();
 		loop_rate.sleep();
 	}

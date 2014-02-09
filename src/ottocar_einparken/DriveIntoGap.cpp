@@ -27,6 +27,7 @@ DriveIntoGap::DriveIntoGap()
 	 ledBremse = false;
 
 	 foundGapSice = 0;
+	 ledChanged = false;
 }
 
 DriveIntoGap::~DriveIntoGap()
@@ -103,16 +104,90 @@ DriveIntoGap::driveData DriveIntoGap::drive(sensor_msgs::LaserScan laser,
 		break;
 
 	case 13:
-		blinkDone = true;
+		//1. mal an
+		ledBlinkerLinks = true;
+		ledBlinkerRechts = true;
+		ledBremse = true;
+		ledChanged = true;
+		lastTime = ros::Time::now();
 		mode = 14;
 		break;
 
+	case 14:
+		//1. mal aus
+		if ((lastTime + ros::Duration(0.5)) < ros::Time::now())
+		{
+			ledBlinkerLinks = false;
+			ledBlinkerRechts = false;
+			ledChanged = true;
+			lastTime = ros::Time::now();
+			mode = 15;
+		}
+		break;
+
+	case 15:
+		//2. mal an
+		if ((lastTime + ros::Duration(0.5)) < ros::Time::now())
+		{
+			ledBlinkerLinks = true;
+			ledBlinkerRechts = true;
+			ledChanged = true;
+			lastTime = ros::Time::now();
+			mode = 16;
+			ROS_INFO("[DIG]: mode auf %d gesetzt", mode);
+		}
+		break;
+
+	case 16:
+		//2. mal aus
+		if ((lastTime + ros::Duration(0.5)) < ros::Time::now())
+		{
+			ledBlinkerLinks = false;
+			ledBlinkerRechts = false;
+			ledChanged = true;
+			lastTime = ros::Time::now();
+			mode = 17;
+			ROS_INFO("[DIG]: mode auf %d gesetzt", mode);
+		}
+		break;
+
+	case 17:
+		//3. mal an
+		if ((lastTime + ros::Duration(0.5)) < ros::Time::now())
+		{
+			ledBlinkerLinks = true;
+			ledBlinkerRechts = true;
+			ledChanged = true;
+			lastTime = ros::Time::now();
+			mode = 18;
+			ROS_INFO("[DIG]: mode auf %d gesetzt", mode);
+		}
+		break;
+
+	case 18:
+		//3. mal aus
+		if ((lastTime + ros::Duration(0.5)) < ros::Time::now())
+		{
+			ledBlinkerLinks = false;
+			ledBlinkerRechts = false;
+			ledBremse = true;
+			ledChanged = true;
+			lastTime = ros::Time::now();
+			mode = 19;
+			ROS_INFO("[DIG]: mode auf %d gesetzt", mode);
+		}
+		break;
+
 	default:
+		ROS_INFO("[DIG]: default mode erreicht");
 		speedAndAngle.angle.data = STRAIGHTFORWARD;
 		speedAndAngle.speed.data = 0;
-		speedAndAngle.led1.data = 105;
-		speedAndAngle.led2.data = 106;
-		speedAndAngle.led3.data = 108;
+		if (!ledBremse)
+		{
+			ledBremse = true;
+			ledChanged = true;
+		}
+		blinkDone = true;
 		break;
 	}
 
@@ -182,12 +257,13 @@ DriveIntoGap::driveData DriveIntoGap::wait1(int odometry)
 		lastTime = ros::Time::now();
 		lastOdometry = odometry;
 		mode = 5;
+		ledBremse = false;
+		ledChanged = true;
 	}
 
 	driveData ti;
 	ti.angle.data = STRAIGHTFORWARD;
 	ti.speed.data = 0;
-	ledBremse = true;
 
 	return ti;
 }
@@ -204,6 +280,8 @@ DriveIntoGap::driveData DriveIntoGap::back1(float gapSize, int odometry)
 			lastTime = ros::Time::now();
 			lastOdometry = odometry;
 			mode = 6;
+			ledBremse = true;
+			ledChanged = true;
 		}
 
 	}
@@ -218,6 +296,8 @@ DriveIntoGap::driveData DriveIntoGap::back1(float gapSize, int odometry)
 			lastTime = ros::Time::now();
 			lastOdometry = odometry;
 			mode = 6;
+			ledBremse = true;
+			ledChanged = true;
 		}
 	}
 
@@ -231,6 +311,8 @@ DriveIntoGap::driveData DriveIntoGap::back1(float gapSize, int odometry)
 			lastTime = ros::Time::now();
 			lastOdometry = odometry;
 			mode = 6;
+			ledBremse = true;
+			ledChanged = true;
 		}
 	}
 	else
@@ -242,7 +324,6 @@ DriveIntoGap::driveData DriveIntoGap::back1(float gapSize, int odometry)
 	driveData speedAndAngle;
 	speedAndAngle.angle.data = RIGHT_MAX;
 	speedAndAngle.speed.data = -SPEED;
-ledBremse = false;
 
 	return speedAndAngle;
 }
@@ -254,18 +335,20 @@ DriveIntoGap::driveData DriveIntoGap::wait2(int odometry)
 		lastTime = ros::Time::now();
 		lastOdometry = odometry;
 		mode = 7;
+		ledBremse = false;
+		ledChanged = true;
 	}
 
 	driveData ti;
 
 	ti.speed.data = 0;
 	ti.angle.data = STRAIGHTFORWARD;
-	ledBremse = true;
 
-	if (blinkerOn && lastTimeBlinkerChange + ros::Duration(0.5) < ros::Time::now())
+
+	if (ledBlinkerRechts && lastTimeBlinkerChange + ros::Duration(0.5) < ros::Time::now())
 	{
 		ledBlinkerRechts = false;
-		blinkerOn = false;
+		ledChanged = true;
 		lastTimeBlinkerChange = ros::Time::now();
 	}
 
@@ -293,6 +376,8 @@ DriveIntoGap::driveData DriveIntoGap::back2(const sensor_msgs::LaserScan laser,
 					minValue);
 			lastTime = ros::Time::now();
 			mode = 8;
+			ledBremse = true;
+			ledChanged = true;
 		}
 		//timeOut
 		if ((lastTime + ros::Duration(5)) < ros::Time::now()) //todo 0.12
@@ -302,41 +387,13 @@ DriveIntoGap::driveData DriveIntoGap::back2(const sensor_msgs::LaserScan laser,
 					drivenM(odometry));
 			lastTime = ros::Time::now();
 			mode = 8;
+			ledBremse = true;
+			ledChanged = true;
 		}
 	}
 
 	//70 cm
 	if (gapSize == (float) 0.7)
-	{
-		float minValue = 1;
-		for (int i = 255 - 150; i <= 255 + 150; i++)
-		{
-			if (laser.ranges[i] < minValue)
-			{
-				minValue = laser.ranges[i];
-			}
-		}
-
-		if (minValue > 0.17 && minValue < 0.4 && drivenM(odometry) > 0.25)
-		{
-			ROS_WARN("[DIG]: in Luecke mit Laserscanner gefahren: %2.4f",
-					minValue);
-			lastTime = ros::Time::now();
-			mode = 8;
-		}
-		//timeOut
-		if ((lastTime + ros::Duration(5)) < ros::Time::now())
-		{
-			ROS_INFO("[DIG]: in die Luecke gefahren: %2.4f", distanceBack);
-			ROS_WARN("[DIG]: --> timeOut: %2.4f | odo: %2.4f", minValue,
-					drivenM(odometry));
-			lastTime = ros::Time::now();
-			mode = 8;
-		}
-	}
-
-	//80 cm
-	if (gapSize == (float) 0.8)
 	{
 		float minValue = 1;
 		for (int i = 255 - 150; i <= 255 + 150; i++)
@@ -353,6 +410,42 @@ DriveIntoGap::driveData DriveIntoGap::back2(const sensor_msgs::LaserScan laser,
 					minValue);
 			lastTime = ros::Time::now();
 			mode = 8;
+			ledBremse = true;
+			ledChanged = true;
+		}
+		//timeOut
+		if ((lastTime + ros::Duration(5)) < ros::Time::now())
+		{
+			ROS_INFO("[DIG]: in die Luecke gefahren: %2.4f", distanceBack);
+			ROS_WARN("[DIG]: --> timeOut: %2.4f | odo: %2.4f", minValue,
+					drivenM(odometry));
+			lastTime = ros::Time::now();
+			mode = 8;
+			ledBremse = true;
+			ledChanged = true;
+		}
+	}
+
+	//80 cm
+	if (gapSize == (float) 0.8)
+	{
+		float minValue = 1;
+		for (int i = 255 - 150; i <= 255 + 150; i++)
+		{
+			if (laser.ranges[i] < minValue)
+			{
+				minValue = laser.ranges[i];
+			}
+		}
+
+		if (minValue > 0.22 && minValue < 0.4 && drivenM(odometry) > 0.25)
+		{
+			ROS_WARN("[DIG]: in Luecke mit Laserscanner gefahren: %2.4f",
+					minValue);
+			lastTime = ros::Time::now();
+			mode = 8;
+			ledBremse = true;
+			ledChanged = true;
 		}
 		//timeout
 		if ((lastTime + ros::Duration(5)) < ros::Time::now())
@@ -362,13 +455,14 @@ DriveIntoGap::driveData DriveIntoGap::back2(const sensor_msgs::LaserScan laser,
 					drivenM(odometry));
 			lastTime = ros::Time::now();
 			mode = 8;
+			ledBremse = true;
+			ledChanged = true;
 		}
 	}
 
 	driveData ti;
 	ti.angle.data = LEFT_MAX;
 	ti.speed.data = -SPEED;
-	ledBremse = false;
 
 	return ti;
 }
@@ -383,7 +477,6 @@ DriveIntoGap::driveData DriveIntoGap::wait3()
 	driveData ti;
 	ti.speed.data = 0;
 	ti.angle.data = STRAIGHTFORWARD;
-	ledBremse = true;
 
 	return ti;
 }
@@ -395,12 +488,13 @@ DriveIntoGap::driveData DriveIntoGap::waitTurn(int odometry)
 		lastTime = ros::Time::now();
 		lastOdometry = odometry;
 		mode = 10;
+		ledBremse = false;
+		ledChanged = true;
 	}
 
 	driveData ti;
 	ti.angle.data = RIGHT_MAX;
 	ti.speed.data = 0;
-ledBremse = true;
 
 	return ti;
 }
@@ -417,6 +511,8 @@ DriveIntoGap::driveData DriveIntoGap::forwards(const sensor_msgs::LaserScan lase
 		ROS_WARN("[DIG]: nach vorne gefahren: timeOut");
 		lastTime = ros::Time::now();
 		mode = 11;
+		ledBremse = true;
+		ledChanged = true;
 		return ti;
 	}
 
@@ -431,6 +527,8 @@ DriveIntoGap::driveData DriveIntoGap::forwards(const sensor_msgs::LaserScan lase
 						laser.ranges[i], i);
 				lastTime = ros::Time::now();
 				mode = 11;
+				ledBremse = true;
+				ledChanged = true;
 				return ti;
 			}
 		}
@@ -448,6 +546,8 @@ DriveIntoGap::driveData DriveIntoGap::forwards(const sensor_msgs::LaserScan lase
 						laser.ranges[i], i);
 				lastTime = ros::Time::now();
 				mode = 11;
+				ledBremse = true;
+				ledChanged = true;
 				return ti;
 			}
 		}
@@ -465,6 +565,8 @@ DriveIntoGap::driveData DriveIntoGap::forwards(const sensor_msgs::LaserScan lase
 						laser.ranges[i], i);
 				lastTime = ros::Time::now();
 				mode = 11;
+				ledBremse = true;
+				ledChanged = true;
 				return ti;
 			}
 		}
@@ -472,7 +574,7 @@ DriveIntoGap::driveData DriveIntoGap::forwards(const sensor_msgs::LaserScan lase
 	}
 
 	ti.speed.data = SPEED;
-ledBremse = false;
+
 	return ti;
 }
 
@@ -483,31 +585,31 @@ DriveIntoGap::driveData DriveIntoGap::wait4(int odometry)
 		lastTime = ros::Time::now();
 		lastOdometry = odometry;
 		mode = 12;
+		ledBremse = false;
+		ledChanged = true;
 	}
 
 	driveData ti;
 	ti.angle.data = STRAIGHTFORWARD;
 	ti.speed.data = 0;
-ledBremse = true;
 
 	return ti;
 }
 
 DriveIntoGap::driveData DriveIntoGap::backLast(float distanceBack, int odometry)
 {
-	//todo das auto faehrt nicht an
-
-	if (drivenM(odometry) > 0.15 || distanceBack < 11)
+	if (drivenM(odometry) > 0.5)
 	{
 		ROS_INFO("[DIG]: kurzes Stueck zurueckgesetzt: %2.4f", distanceBack);
 		ROS_INFO("[DIG]: gefahrene Odometrie: %2.4f", drivenM(odometry));
 		lastTime = ros::Time::now();
 		mode = 13;
+		ledBremse = true;
+		ledChanged = true;
 	}
 	driveData ti;
 	ti.angle.data = STRAIGHTFORWARD;
 	ti.speed.data = -SPEED;
-ledBremse = false;
 
 	return ti;
 }
@@ -527,8 +629,12 @@ DriveIntoGap::driveData DriveIntoGap::waitForDistance(float distanceToGap, int o
 	}
 	driveData result;
 	result.angle.data = STRAIGHTFORWARD;
-	result.speed.data = SPEED_PARKING;
-	ledBremse = false;
+	result.speed.data = SPEED_DRIVING;
+//	if (ledBremse)
+//	{
+//		ledBremse = false;
+//		ledChanged = true;
+//	}
 	return result;
 }
 
@@ -550,22 +656,22 @@ DriveIntoGap::driveData DriveIntoGap::driveFirstHalf(int odometry, float dataIRs
 		mode = 2;
 	}
 
-	if (!blinkerOn && lastTimeBlinkerChange + ros::Duration(0.5) < ros::Time::now())
+	if (!ledBlinkerRechts && lastTimeBlinkerChange + ros::Duration(0.5) < ros::Time::now())
 	{
 		ledBlinkerRechts = true;
-		blinkerOn = true;
+		ledChanged = true;
 		lastTimeBlinkerChange = ros::Time::now();
 	}
 
-	if (blinkerOn && lastTimeBlinkerChange + ros::Duration(0.5) < ros::Time::now())
+	if (ledBlinkerRechts && lastTimeBlinkerChange + ros::Duration(0.5) < ros::Time::now())
 	{
 		ledBlinkerRechts = false;
-		blinkerOn = false;
+		ledChanged = true;
 		lastTimeBlinkerChange = ros::Time::now();
 	}
 
 	result.angle.data = STRAIGHTFORWARD;
-	result.speed.data = SPEED_PARKING;
+	result.speed.data = SPEED_DRIVING;
 	return result;
 }
 
@@ -582,22 +688,22 @@ DriveIntoGap::driveData DriveIntoGap::driveSecondHalf(float dataIRside, int odom
 		mode = 3;
 	}
 
-	if (!blinkerOn && lastTimeBlinkerChange + ros::Duration(0.5) < ros::Time::now())
+	if (!ledBlinkerRechts && lastTimeBlinkerChange + ros::Duration(0.5) < ros::Time::now())
 	{
 		ledBlinkerRechts = true;
-		blinkerOn = true;
+		ledChanged = true;
 		lastTimeBlinkerChange = ros::Time::now();
 	}
 
-	if (blinkerOn && lastTimeBlinkerChange + ros::Duration(0.5) < ros::Time::now())
+	if (ledBlinkerRechts && lastTimeBlinkerChange + ros::Duration(0.5) < ros::Time::now())
 	{
 		ledBlinkerRechts = false;
-		blinkerOn = false;
+		ledChanged = true;
 		lastTimeBlinkerChange = ros::Time::now();
 	}
 
 	result.angle.data = STRAIGHTFORWARD;
-	result.speed.data = SPEED_PARKING;
+	result.speed.data = SPEED_DRIVING;
 	return result;
 }
 
@@ -614,6 +720,7 @@ DriveIntoGap::driveData DriveIntoGap::positioning(int odometry, float gapSize)
 		result.speed.data = 0;
 		result.angle.data = STRAIGHTFORWARD;
 		ledBremse = true;
+		ledChanged = true;
 		return result;
 	}
 
@@ -627,21 +734,22 @@ DriveIntoGap::driveData DriveIntoGap::positioning(int odometry, float gapSize)
 			result.speed.data = 0;
 			result.angle.data = STRAIGHTFORWARD;
 			ledBremse = true;
+			ledChanged = true;
 			return result;
 		}
 	}
 
-	if (!blinkerOn && lastTimeBlinkerChange + ros::Duration(0.5) < ros::Time::now())
+	if (!ledBlinkerRechts && lastTimeBlinkerChange + ros::Duration(0.5) < ros::Time::now())
 	{
 		ledBlinkerRechts = true;
-		blinkerOn = true;
+		ledChanged = true;
 		lastTimeBlinkerChange = ros::Time::now();
 	}
 
-	if (blinkerOn && lastTimeBlinkerChange + ros::Duration(0.5) < ros::Time::now())
+	if (ledBlinkerRechts && lastTimeBlinkerChange + ros::Duration(0.5) < ros::Time::now())
 	{
 		ledBlinkerRechts = false;
-		blinkerOn = false;
+		ledChanged = true;
 		lastTimeBlinkerChange = ros::Time::now();
 	}
 

@@ -60,6 +60,7 @@ public:
 
 
 	int mode;
+	bool ledChanged;
 
 private:
 
