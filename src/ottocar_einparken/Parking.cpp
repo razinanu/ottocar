@@ -22,6 +22,7 @@ Parking::Parking() :
 	bufferSide = new RingBuffer();
 
 	lastLaserscanTime = ros::Time::now();
+	button = false;
 }
 
 Parking::~Parking()
@@ -103,12 +104,22 @@ void Parking::ir2Values(const std_msgs::Float32 sensor)
 void Parking::voltageValues(std_msgs::Float32 msg)
 {
 	voltage = msg.data;
-//todo Klasse Ringpuffer schreiben
+//todo Klasse Ringpuffer benutzen ;)
 }
 
 void Parking::motorValues(const std_msgs::Int32 sensor)
 {
 	motorRevolutions = sensor.data;
+}
+
+void Parking::buttonPressed(const std_msgs::Bool msg)
+{
+	button = !button;
+}
+
+void Parking::initButton()
+{
+	buttonOnCar_Subscriber = parkingNode.subscribe("/GPIO_button1", 1, &Parking::buttonPressed, this);
 }
 
 void Parking::init()
@@ -133,7 +144,6 @@ void Parking::init()
 
 void Parking::finishedParkLed()
 {
-	// TODO soll dreimal blinken und dann aufhoeren
 	// anschalten
 	if ((lastTime + ros::Duration(0.5)) < ros::Time::now())
 	{
@@ -168,7 +178,7 @@ void Parking::allLightsOff()
 {
 	for (int i = 0; i < 10; ++i)
 	{
-		msg_led.data = i; // vorne rechts
+		msg_led.data = i;
 		led_pub.publish(msg_led);
 	}
 }
@@ -178,6 +188,17 @@ int main(int argc, char** argv)
 	ros::init(argc, argv, "parking");
 
 	Parking park;
+	park.initButton();
+
+	//licht aus
+	park.allLightsOff();
+
+	//erst loslegen, wenn das vom Button gesendet wurde
+	while(!park.button)
+	{
+		ros::spinOnce();
+	}
+
 	try
 	{
 		park.init();
@@ -190,6 +211,7 @@ int main(int argc, char** argv)
 		ROS_ERROR("Unknown Error\n\r");
 		return -1;
 	}
+
 
 	DriveIntoGap::driveData data;
 
@@ -228,7 +250,7 @@ int main(int argc, char** argv)
 	ros::Rate loop_rate(LOOP_RATE);
 
 	//licht aus
-	park.allLightsOff(); // TODO auskommentieren
+	park.allLightsOff();
 
 	//Scheinwerfer an
 	data.led2.data = 101;
@@ -242,6 +264,12 @@ int main(int argc, char** argv)
 
 	while (ros::ok)
 	{
+		//beenden, wenn der button wieder gedrückt wurde
+		if(!park.button)
+		{
+			return 0;
+		}
+
 //		//move to the gap
 //		if (!park.ParkingController_)
 //		{
@@ -280,8 +308,7 @@ int main(int argc, char** argv)
 		DriveIntoGap::driveData data = park.driveIntoGap.drive(park.g_laser,
 				park.gapcal.gapIs, park.bufferBack->getMedian(),
 				park.bufferSide->getMedian(), park.motorRevolutions,
-				park.voltage, park.gapcal.getGapDistance(),
-				park.bufferSide->getMedian());
+				park.voltage, park.gapcal.getGapDistance());
 
 		park.angle_pub.publish(data.angle);
 		park.speed_pub.publish(data.speed);

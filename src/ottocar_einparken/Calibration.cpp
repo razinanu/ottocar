@@ -9,7 +9,6 @@
 
 Calibration::Calibration()
 {
-	// TODO Auto-generated constructor stub
 	driveEnable = false;
 	status = 0;
 	bufferSize = 20;

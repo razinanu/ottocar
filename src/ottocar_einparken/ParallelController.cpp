@@ -19,10 +19,6 @@ ParallelController::~ParallelController()
 
 void ParallelController::laserScanParallel(const sensor_msgs::LaserScan laser)
 {
-
-	//todo Hindernis am Ende der Strecke beruecksichtigen
-	//todo Bot steht an der Wand und findet keinen Sprung
-
 	check1(laser);
 
 	//pruefen, ob vor dem Auto ein Hindernis steht (nicht elegant)

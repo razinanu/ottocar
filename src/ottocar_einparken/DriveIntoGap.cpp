@@ -43,7 +43,7 @@ float DriveIntoGap::drivenM(int odometry)
 
 DriveIntoGap::driveData DriveIntoGap::drive(sensor_msgs::LaserScan laser,
 		float gapSize, float distanceBack, float distanceSide, int odometry,
-		float voltage, float distanceToGap, float dataIRside)
+		float voltage, float distanceToGap)
 {
 	driveData speedAndAngle;
 	speedAndAngle.angle.data = STRAIGHTFORWARD;
@@ -56,11 +56,11 @@ DriveIntoGap::driveData DriveIntoGap::drive(sensor_msgs::LaserScan laser,
 		break;
 
 	case 1:
-		speedAndAngle = driveFirstHalf(odometry, dataIRside);
+		speedAndAngle = driveFirstHalf(odometry, distanceSide);
 		break;
 
 	case 2:
-		speedAndAngle = driveSecondHalf(dataIRside, odometry);
+		speedAndAngle = driveSecondHalf(distanceSide, odometry);
 		break;
 
 	case 3:
@@ -238,18 +238,6 @@ float DriveIntoGap::calculateSpeed10(float voltage)
 	return result;
 }
 
-//DriveIntoGap::driveData DriveIntoGap::init()
-//{
-//	lastTime = ros::Time::now();
-//	mode = 4;
-//
-//	driveData ti;
-//	ti.angle.data = STRAIGHTFORWARD;
-//	ti.speed.data = 0;
-//
-//	return ti;
-//}
-
 DriveIntoGap::driveData DriveIntoGap::wait1(int odometry)
 {
 	if ((lastTime + ros::Duration(0.5)) < ros::Time::now())
@@ -380,7 +368,7 @@ DriveIntoGap::driveData DriveIntoGap::back2(const sensor_msgs::LaserScan laser,
 			ledChanged = true;
 		}
 		//timeOut
-		if ((lastTime + ros::Duration(5)) < ros::Time::now()) //todo 0.12
+		if ((lastTime + ros::Duration(5)) < ros::Time::now())
 		{
 			ROS_INFO("[DIG]: in die Luecke gefahren: %2.4f", distanceBack);
 			ROS_WARN("[DIG]: --> timeOut: %2.4f | odo: %2.4f", minValue,
@@ -404,7 +392,7 @@ DriveIntoGap::driveData DriveIntoGap::back2(const sensor_msgs::LaserScan laser,
 			}
 		}
 
-		if (minValue > 0.18 && minValue < 0.4 && drivenM(odometry) > 0.25)
+		if (minValue > 0.17 && minValue < 0.4 && drivenM(odometry) > 0.25)
 		{
 			ROS_WARN("[DIG]: in Luecke mit Laserscanner gefahren: %2.4f",
 					minValue);
@@ -438,7 +426,7 @@ DriveIntoGap::driveData DriveIntoGap::back2(const sensor_msgs::LaserScan laser,
 			}
 		}
 
-		if (minValue > 0.22 && minValue < 0.4 && drivenM(odometry) > 0.25)
+		if (minValue > 0.20 && minValue < 0.4 && drivenM(odometry) > 0.25)
 		{
 			ROS_WARN("[DIG]: in Luecke mit Laserscanner gefahren: %2.4f",
 					minValue);
@@ -598,7 +586,7 @@ DriveIntoGap::driveData DriveIntoGap::wait4(int odometry)
 
 DriveIntoGap::driveData DriveIntoGap::backLast(float distanceBack, int odometry)
 {
-	if (drivenM(odometry) > 0.5)
+	if (drivenM(odometry) > 0.05)
 	{
 		ROS_INFO("[DIG]: kurzes Stueck zurueckgesetzt: %2.4f", distanceBack);
 		ROS_INFO("[DIG]: gefahrene Odometrie: %2.4f", drivenM(odometry));

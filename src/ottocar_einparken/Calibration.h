@@ -17,6 +17,17 @@
 #include "Parking.h"
 #include "RingBuffer.h"
 
+/**
+ * \brief  Klasse zur Bestimmung grundlegender Parameter
+ *
+ *         Diese Klasse ist zur Bestimmung grundlegender Parameter konzipiert. Sie ist
+ *         für den Ablauf des Einparkvorganges nicht notwendig und quasie als Spielwiese
+ *         gedacht. Alle Tests, die nicht direkt mit dem Einparken zusammenhängen, z.B.
+ *         Geschwindigkeitsmessungen o.ä., sollten in dieser Klasse ausgeführt werden.
+ *         Die Dokumentation einzelner Funktionen kann deshalb unvollständig sein.
+ *
+ */
+
 class Calibration
 {
 public:

@@ -25,12 +25,26 @@
 #include "ConstPark.h"
 #include <iostream>
 
+/**
+ * \brief  Kollisionserkennung
+ *
+ *         Diese Klasse stellt eine Funktion zur Verfügung, die die Daten
+ *         das Laserscanners dahingehend auswertet, ob sich ein Hindernis
+ *         vor dem Auto befindet.
+ *         Die ursprünglich angedachte Funktionalität, die Ausrichtung des
+ *         Fahrzeuges bezüglich der Kartons zu bestimmen, erwies sich als
+ *         nicht praktikabel.
+ *
+ */
+
 class ParallelController
 {
 private:
 	bool obstacleInFrontOfTheCar;
 
+	///gibt die gesamten Messdaten des Laserscanners auf der Konsole aus
 	void check1(const sensor_msgs::LaserScan laser);
+	///gibt eine Rückmeldung auf der Konsole aus, wenn ein Hindernis erkannt wurde
 	void check2();
 
 public:
@@ -41,16 +55,20 @@ public:
 	/**
 	 * \brief  Werte des Laserscanners auswerten
 	 *
-	 * Diese Funktion berechnet bei jedem Aufruf den Abstand sowie die Ausrichtung des Autos zu den Kartons auf der rechten Seite
-	 * des Fahrzeugs. Die Ergebnisse werden in der Klasse gespeichert und koennen ueber die entsprechenden Funktionen
-	 * ausgelesen werden.
+	 * 		Diese Funktion wertet die Daten des Laserscanners dahingehend aus,
+	 * 		ob sich ein Hindernis vor dem Auto befindet.
 	 *
 	 * \param		laser	Datenarray des Laserscanners
-	 * \return    	void
 	 *
 	 */
 	void laserScanParallel(const sensor_msgs::LaserScan laser);
 
+	/**
+	 * \brief  Fahrtfreigabe
+	 *
+	 *         Diese Funktion gibt den Wert true zurück, wenn sich kein Hindernis
+	 *         vor dem Auto befindet.
+	 */
 	bool driveEnable();
 };
 

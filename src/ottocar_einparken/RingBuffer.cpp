@@ -33,7 +33,7 @@ void RingBuffer::insert (float value)
 		bufferPointer = 0;
 	}
 
-	//todo nur für Testzwecke! sonst bitte auskommentieren
+	//nur für Testzwecke, sonst auskommentieren
 	if (abs(value - getMedian()) > 0.05)
 	{
 		ROS_WARN("[BUF]: neuer Wert stark abweichend: %2.4f | %2.4f", value, getMedian());

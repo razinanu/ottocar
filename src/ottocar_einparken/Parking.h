@@ -16,6 +16,7 @@
 #include "std_msgs/Int32.h"
 #include "std_msgs/String.h"
 #include "std_msgs/Float32.h"
+#include "std_msgs/Bool.h"
 
 #include <sstream>
 #include <iostream>
@@ -38,6 +39,7 @@ private:
 	ros::Subscriber sensor_voltage;
 	ros::Subscriber sensor_motor_revolutions_Subscriber;
 	ros::Subscriber imu_dataRaw_Subscriber;
+	ros::Subscriber buttonOnCar_Subscriber;
 
 	ros::Time lastImuTime;
 
@@ -47,6 +49,7 @@ public:
 	virtual ~Parking();
 	void scanValues(const sensor_msgs::LaserScan laser);
 	void init();
+	void initButton();
 	bool GapCalculator_, ParallelController_, ParkingController_;
 	GapCalculator gapcal;
 	ParallelController parallel;
@@ -67,6 +70,7 @@ public:
 	void motorValues(std_msgs::Int32 sensor);
 	float linearizeBack(float sensor);
 	float linearizeSide(float value);
+	void buttonPressed(std_msgs::Bool msg);
 
 	float intoGapAngle;
 	float intoGapSpeed;
@@ -77,6 +81,7 @@ public:
 
 	double gapDistance;
 	ros::Time lastLaserscanTime;
+	bool button;
 
 	int motorRevolutions;
 	RingBuffer* bufferBack;
