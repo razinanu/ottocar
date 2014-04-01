@@ -1,0 +1,16 @@
+/** \mainpage Parking Team
+ * \section main_sec1 Introduction
+ * This is a documentation of the method we have developed for executing a parallel parking maneuver on a   
+ * autonomous car. The project is as part of Carolo-Cup competition.  
+ * Therefore, as the first step with the help of laser Scanner and mathematic equation are the gaps and the their length detecte. As the best gap is detected drives the car to  . For this purpose, . 
+ * In this scope the .
+ * 
+ * \section main_sec2 Development Environment
+ * C++ \n
+ * <a href="http://wiki.ros.org/">ROS (Robot Operating System)</a>\n
+ ** \section main_sec4 Related Links
+ *  \n
+ *  <a href="http://ros.org/wiki/ROS/Tutorials">ROS Tutorial</a>\n
+ * <a href="http://ottocar.cs.ovgu.de/"> Installation</a>\n
+
+**/

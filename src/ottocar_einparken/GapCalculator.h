@@ -22,7 +22,7 @@ enum GAPSIZE{
 
 /**\brief
  * To detect the Gap, at first searching the first corner of Obstacle, which has
- * distance smaller than FIRSTDISTANCE to laser scanner. Save his horizontal and vertical distance to
+ * distance smaller than FIRSTDISTANCE (see ConstPark.h)to laser scanner. Save his horizontal and vertical distance to
  * Laser scanner as base point. Next searching the corner of second obstacle to calculate the gap
  * length. By each found point compare  difference between his horizontal distance and base horizontal
  * distance, if it lies in the interval MINDISTANCE, accept it and calculate the difference of his vertical and base vestcal

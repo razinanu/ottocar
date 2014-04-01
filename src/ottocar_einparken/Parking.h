@@ -27,15 +27,25 @@
 
 #include "RingBuffer.h"
 
+/**\brief
+ *The main parking class
+ * @note       This class represents RosNode.
+ * @see        RosNode
+ * @see        http://wiki.ros.org/rosnode**/
+
 class Parking
 {
 
 private:
 
 	ros::NodeHandle parkingNode;
+	/**\brief subscribe Scan data **/
 	ros::Subscriber hokuyoSubscriber;
+	/**\brief subscribe infrared sensor **/
 	ros::Subscriber sensor_ir1_Subscriber;
+	/**\brief subscribe infrared sensor **/
 	ros::Subscriber sensor_ir2_Subscriber;
+	/**\brief subscribe battery voltage **/
 	ros::Subscriber sensor_voltage;
 	ros::Subscriber sensor_motor_revolutions_Subscriber;
 	ros::Subscriber imu_dataRaw_Subscriber;
@@ -47,6 +57,9 @@ private:
 public:
 	Parking();
 	virtual ~Parking();
+	/**\brief this function gives the laser scanner data to GapCalculator.cpp and ParallelContorller.cpp
+		 * \param sensor_msgs::LaserScan& msg the laser scanner data
+		 * **/
 	void scanValues(const sensor_msgs::LaserScan laser);
 	void init();
 	void initButton();
@@ -68,7 +81,13 @@ public:
 	void ir2Values(const std_msgs::Float32 sensor);
 	void voltageValues(std_msgs::Float32 msg);
 	void motorValues(std_msgs::Int32 sensor);
+	/**\brief linearize the infrared sensor data
+			 * \param float sensor the infrared sensor data
+			 * **/
 	float linearizeBack(float sensor);
+	/**\brief linearize the infrared sensor data
+			 * \param float value the infrared sensor data
+			 * **/
 	float linearizeSide(float value);
 	void buttonPressed(std_msgs::Bool msg);
 
