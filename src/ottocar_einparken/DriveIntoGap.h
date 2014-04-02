@@ -34,7 +34,7 @@ public:
 	// GLOBAL
 	bool blinkDone;
 
-
+	///Datentyp, um Fahrdaten sowie 3 LEDs zu übergeben
 	struct twoInts
 	{
 		int angle;
@@ -44,6 +44,7 @@ public:
 		int led3;
 	};
 
+	///Datentyp, um Fahrdaten sowie alle LEDs zu übergeben
 	struct driveData
 	{
 		std_msgs::Int8 speed;
