@@ -20,7 +20,8 @@ enum GAPSIZE{
 
 };
 
-/**\brief
+/**\brief  This class is to detect the best gap
+ *
  * To detect the Gap, at first searching the first corner of Obstacle, which has
  * distance smaller than FIRSTDISTANCE (see ConstPark.h)to laser scanner. Save his horizontal and vertical distance to
  * Laser scanner as base point. Next searching the corner of second obstacle to calculate the gap

@@ -1,16 +1,17 @@
-/** \mainpage Parking Team
+/** \mainpage Parking-Team
  * \section main_sec1 Introduction
- * This is a documentation of the method we have developed for executing a parallel parking maneuver on a   
- * autonomous car. The project is as part of Carolo-Cup competition.  
- * Therefore, as the first step with the help of laser Scanner and mathematic equation are the gaps and the their length detecte. As the best gap is detected drives the car to  . For this purpose, . 
- * In this scope the .
+*This document explains the method we have developed for executing a parallel parking maneuver on a
+ * autonomous car. The project is a part of Carolo-Cup competition 2014 - Brunswick, Germany. There are two
+ * main steps in this project. The first step is to detect the best gap with the help of laser scanner and 
+*  using geometrical relations. The second step is to park in the gap with help of odometry and laser
+* scanner.
  * 
  * \section main_sec2 Development Environment
  * C++ \n
  * <a href="http://wiki.ros.org/">ROS (Robot Operating System)</a>\n
  ** \section main_sec4 Related Links
- *  \n
- *  <a href="http://ros.org/wiki/ROS/Tutorials">ROS Tutorial</a>\n
- * <a href="http://ottocar.cs.ovgu.de/"> Installation</a>\n
-
-**/
+ * <a href="https://wiki.ifr.ing.tu-bs.de/carolocup/"> Carolo_Cup Homepage </a>\n
+ * <a href="http://ottocar.xaedes.de/"> Project wiki </a>\n
+ * <a href="http://ottocar.cs.ovgu.de/"> Ottocar Homepage</a>\n
+ * <a href="http://ros.org/wiki/ROS/Tutorials">ROS Tutorial</a>\ne
+ **/
