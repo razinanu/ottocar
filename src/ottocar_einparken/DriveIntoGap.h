@@ -69,8 +69,8 @@ public:
 	  *         Diese Funktion steuert den gesamten Einparkvorgang und ist streng
 	  *         sequentiell aufgebaut. Die Übergänge zwischen den einzelnen Phasen
 	  *         des Einparkens werden durch jeweils spezifizierte Sensoreingaben
-	  *         ausgelöst. Zurückgegeben werden die Geschwindigkeit und der Lenk-
-	  *         winkel, die in der Parking.cpp gepublished werden.
+	  *         ausgelöst. Zurückgegeben werden die Geschwindigkeit und der Lenkwinkel,
+	  *         die in der Parking.cpp gepublished werden.
 	  *
 	  * \param	laser   		Messwerte des Laserscanners
 	  * \param	gapSize			Größe der Lücke, in die das Auto einparken soll (0,6/0,7/0,8)
@@ -153,7 +153,7 @@ private:
 	 /**
 	  * \brief  letzte Korrektur
 	  *
-	  *         Damit der Abstand zum vorderen Karton regelkomform ist, fährt das Auto
+	  *         Damit der Abstand zum vorderen Karton regelkonform ist, fährt das Auto
 	  *         in diesem Zustand 5 cm zurück.
 	  *
 	  */
