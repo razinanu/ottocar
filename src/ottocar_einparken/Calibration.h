@@ -16,12 +16,16 @@
 #include "std_msgs/Float32.h"
 #include "Parking.h"
 #include "RingBuffer.h"
+#include <tf/tf.h>
+#include <tf/transform_broadcaster.h>
+
+#include <nav_msgs/Odometry.h>
 
 /**
  * \brief  Klasse zur Bestimmung grundlegender Parameter
  *
  *         Diese Klasse ist zur Bestimmung grundlegender Parameter konzipiert. Sie ist
- *         für den Ablauf des Einparkvorganges nicht notwendig und quasi als Spielwiese
+ *         für den Ablauf des Einparkvorganges nicht notwendig und quasie als Spielwiese
  *         gedacht. Alle Tests, die nicht direkt mit dem Einparken zusammenhängen, z.B.
  *         Geschwindigkeitsmessungen o.ä., sollten in dieser Klasse ausgeführt werden.
  *         Die Dokumentation einzelner Funktionen kann deshalb unvollständig sein.
@@ -39,6 +43,7 @@ public:
 	bool driveEnable;
 	ros::Publisher anglePub;
 	ros::Publisher speedPub;
+	ros::Publisher odomPub;
 
 
 	void scanValues(sensor_msgs::LaserScan laser);

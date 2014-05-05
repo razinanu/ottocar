@@ -8,7 +8,6 @@
 #include "DriveIntoGap.h"
 #include "ConstPark.h"
 
-
 DriveIntoGap::DriveIntoGap()
 {
 	mode = 0;
@@ -47,7 +46,6 @@ DriveIntoGap::driveData DriveIntoGap::drive(sensor_msgs::LaserScan laser,
 		float voltage, float distanceToGap)
 {
 	driveData speedAndAngle;
-
 	speedAndAngle.angle.data = STRAIGHTFORWARD;
 	speedAndAngle.speed.data = 0;
 
@@ -312,7 +310,7 @@ DriveIntoGap::driveData DriveIntoGap::back1(float gapSize, int odometry)
 	}
 
 	driveData speedAndAngle;
-	speedAndAngle.angle.data =RIGHT_MAX;
+	speedAndAngle.angle.data = RIGHT_MAX;
 	speedAndAngle.speed.data = -SPEED;
 
 	return speedAndAngle;
@@ -493,7 +491,7 @@ DriveIntoGap::driveData DriveIntoGap::forwards(const sensor_msgs::LaserScan lase
 		float gapSize, int odometry)
 {
 	driveData ti;
-	ti.angle.data =STRAIGHTFORWARD;
+	ti.angle.data = STRAIGHTFORWARD;
 	ti.speed.data = 0;
 
 	if ((lastTime + ros::Duration(2.0)) < ros::Time::now())	//todo timeout sinnvoll?
@@ -722,7 +720,7 @@ DriveIntoGap::driveData DriveIntoGap::positioning(int odometry, float gapSize)
 			lastTime = ros::Time::now();
 			mode = 4;
 			result.speed.data = 0;
-			result.angle.data =STRAIGHTFORWARD;
+			result.angle.data = STRAIGHTFORWARD;
 			ledBremse = true;
 			ledChanged = true;
 			return result;

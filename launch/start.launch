@@ -1,0 +1,19 @@
+<launch>
+
+  <arg name="frame_id" default="/laser"/>
+
+  <include file="$(find ottocar_einparken)/launch/gmapping.launch">	
+  </include>
+
+  <node pkg="hokuyo_node" type="hokuyo_node" output="screen" name="hokuyo" >
+	<param name="frame_id" value="$(arg frame_id)" type="str"/>
+  </node>
+
+  <!-- TF-Daten -->
+  <node pkg="tf" type="static_transform_publisher" name="laser_tf" output="screen" args="0.1 0 0 0.785398163 0 0 base_link laser 100"/>
+
+  <node pkg="ottocar_einparken" type="odomTF" name="cal" />
+
+  <node pkg="rviz" type="rviz" name="rviz" />
+
+</launch>

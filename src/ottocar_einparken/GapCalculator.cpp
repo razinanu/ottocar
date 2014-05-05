@@ -56,7 +56,6 @@ void GapCalculator::LaserScanGapCal(const sensor_msgs::LaserScan laser)
 	minVDistance = 0;
 	angle = laser.angle_max;
 
-
 	for (unsigned int i = laser.ranges.size() - 1;
 			i > (laser.ranges.size()) / 2; i--)
 	{

@@ -1,0 +1,78 @@
+<launch>
+	<!-- Parameter fuer gmapping -->
+	<arg name="scan" default="scan" />
+	<arg name="throttle_scans" default="1" />
+	<arg name="base_frame" default="base_link" />
+	<arg name="map_frame" default="map" />
+	<arg name="odom_frame" default="odom" />
+	<arg name="map_update_interval" default="0.5" />
+	<arg name="maxUrange" default="8" />
+	<arg name="sigma" default="0.05" />
+	<arg name="kernelSize" default="1" />
+	<arg name="lstep" default="0.05" />
+	<arg name="astep" default="0.05" />
+	<arg name="iterations" default="5" />
+	<arg name="lsigma" default="0.075" />
+	<arg name="ogain" default="6" />
+	<arg name="lskip" default="1" />
+	<arg name="srr" default="0.1" />
+	<arg name="srt" default="0.2" />
+	<arg name="str" default="0.1" />
+	<arg name="stt" default="0.2" />
+	<arg name="linearUpdate" default="0.2" />
+	<arg name="angularUpdate" default="0.2" />
+	<arg name="temporalUpdate" default="-1.0" />
+	<arg name="resampleThreshold" default="0.5" />
+	<arg name="particles" default="50" />
+	<arg name="xmin" default="-20.0" />
+	<arg name="ymin" default="-20.0" />
+	<arg name="xmax" default="20.0" />
+	<arg name="ymax" default="20.0" />
+	<arg name="delta" default="0.02" />
+	<arg name="llsamplerange" default="0.01" />
+	<arg name="llsamplestep" default="0.01" />
+	<arg name="lasamplerange" default="0.005" />
+	<arg name="lasamplestep" default="0.005" />
+	<arg name="transform_publish_period" default="0.05" />
+	<arg name="occ_thresh" default="0.25" />
+	<arg name="maxRange" default="15.0" />
+
+	<node pkg="gmapping" output="screen" type="slam_gmapping" name="slam_gmapping" >
+		<param name="scan" value="$(arg scan)" type="str" />
+		<param name="throttle_scans" value="$(arg throttle_scans)" type="double" />
+		<param name="base_frame" value="$(arg base_frame)" type="str" />
+		<param name="map_frame" value="$(arg map_frame)" type="str" />
+		<param name="odom_frame" value="$(arg odom_frame)" type="str" />
+		<param name="map_update_interval" value="$(arg map_update_interval)" type="double" />
+		<param name="maxUrange" value="$(arg maxUrange)" type="double" />
+		<param name="sigma" value="$(arg sigma)" type="double" />
+		<param name="kernelSize" value="$(arg kernelSize)" type="int" />
+		<param name="lstep" value="$(arg lstep)" type="double" />
+		<param name="astep" value="$(arg astep)" type="double" />
+		<param name="iterations" value="$(arg iterations)" type="int" />
+		<param name="lsigma" value="$(arg lsigma)" type="double" />
+		<param name="ogain" value="$(arg ogain)" type="double" />
+		<param name="lskip" value="$(arg lskip)" type="int" />
+		<param name="srr" value="$(arg srr)" type="double" />
+		<param name="srt" value="$(arg srt)" type="double" />
+		<param name="str" value="$(arg str)" type="double" />
+		<param name="stt" value="$(arg stt)" type="double" />
+		<param name="linearUpdate" value="$(arg linearUpdate)" type="double" />
+		<param name="angularUpdate" value="$(arg angularUpdate)" type="double" />
+		<param name="temporalUpdate" value="$(arg temporalUpdate)" type="double" />
+		<param name="resampleThreshold" value="$(arg resampleThreshold)" type="double" />
+		<param name="particles" value="$(arg particles)" type="int" />
+		<param name="xmin" value="$(arg xmin)" type="double" />
+		<param name="ymin" value="$(arg ymin)" type="double" />
+		<param name="xmax" value="$(arg xmax)" type="double" />
+		<param name="ymax" value="$(arg ymax)" type="double" />
+		<param name="delta" value="$(arg delta)" type="double" />
+		<param name="llsamplerange" value="$(arg llsamplerange)" type="double" />
+		<param name="llsamplestep" value="$(arg llsamplestep)" type="double" />
+		<param name="lasamplerange" value="$(arg lasamplerange)" type="double" />
+		<param name="lasamplestep" value="$(arg lasamplestep)" type="double" />
+		<param name="transform_publish_period" value="$(arg transform_publish_period)" type="double" />
+		<param name="occ_thresh" value="$(arg occ_thresh)" type="double" />
+		<param name="maxRange" value="$(arg maxRange)" type="double" />
+	</node>
+</launch>

@@ -168,6 +168,8 @@ void Calibration::init()
 {
 	anglePub = n.advertise<std_msgs::Int8>("angle_cmd", 1);
 	speedPub = n.advertise<std_msgs::Int8>("speed_cmd", 1);
+	odomPub = n.advertise<nav_msgs::Odometry>("odom",1);
+
 	hokuyoSub = n.subscribe("/scan", 1, &Calibration::scanValues,
 			this);
 	voltageSub = n.subscribe("/sensor_voltage", 1, &Calibration::voltageValues, this);
@@ -227,7 +229,7 @@ int main(int argc, char** argv)
 
 	DriveIntoGap::driveData data;
 	ros::Rate loop_rate(100);//LOOP_RATE);
-
+/*
 	data.angle.data = 0;
 	cal.anglePub.publish(data.angle);
 	ros::Duration(0.4).sleep();
@@ -239,14 +241,65 @@ int main(int argc, char** argv)
 	data.angle.data = 0;
 	cal.anglePub.publish(data.angle);
 	ros::Duration(0.4).sleep();
-
+*/
 	ROS_INFO("[CAL]: Calibration gestartet");
+	nav_msgs::Odometry test;
 
-	while (ros::ok)
+	test.pose.pose.position.x = 0;
+	test.pose.pose.position.y = 0;
+	test.pose.pose.position.z = 0;
+
+	//hier könnte ein Fehler liegen :)
+	test.pose.pose.orientation.w = 1;
+	test.pose.pose.orientation.x = 0;
+	test.pose.pose.orientation.y = 0;
+	test.pose.pose.orientation.z = 0;
+
+	//hier fehlt die covarianz
+
+	test.twist.twist.angular.x = 0;
+	test.twist.twist.angular.y = 0;
+	test.twist.twist.angular.z = 0;
+
+	test.twist.twist.linear.x = 0;
+	test.twist.twist.linear.y = 0;
+	test.twist.twist.linear.z = 0;
+
+	//hier fehlt vielleicht auch wieder die covarianz
+
+	test.child_frame_id = "base_footprint";
+
+
+	tf::TransformBroadcaster odom_broadcaster;
+
+	//START
+    geometry_msgs::Quaternion odom_quat = tf::createQuaternionMsgFromYaw(0);
+    geometry_msgs::TransformStamped odom_trans;
+    odom_trans.header.frame_id = "odom";
+    odom_trans.header.stamp=ros::Time::now();
+    static int seq=0;
+    odom_trans.header.seq=seq++;
+    odom_trans.child_frame_id = "base_link";
+
+    odom_trans.transform.translation.x = 0.0;
+    odom_trans.transform.translation.y = 0.0;
+    odom_trans.transform.translation.z = 0.0;
+    odom_trans.transform.rotation = odom_quat;
+
+    //send the transform
+//    odom_broadcaster.sendTransform(odom_trans);
+	//ENDE
+
+
+
+	int i = 1;
+
+	while (ros::ok())
 	{
 
 //		ROS_INFO("[CAL]: distanceBack: %2.4f ",cal.distanceBack);
 
+/*
 		if (!cal.motorRevolutionsSet || abs((cal.motorRevolutions) - (cal.motorRevolutionsStart)) < 5000) //(cal.driveEnable)
 		{
 			data.angle.data = STRAIGHTFORWARD;
@@ -260,10 +313,33 @@ int main(int argc, char** argv)
 		}
 		cal.anglePub.publish(data.angle);
 		cal.speedPub.publish(data.speed);
+*/
+
+
+		//START
+		 odom_trans.header.stamp=ros::Time::now();
+		 odom_trans.header.seq=seq++;
+		 odom_broadcaster.sendTransform(odom_trans);
+		//ENDE
+
+
+
+
+		test.header.seq = i;
+		i ++;
+
+		//vielleicht auch anders
+		test.header.stamp = ros::Time::now();
+
+		//vielleicht auch 1
+		test.header.frame_id = "odom";
+
+		cal.odomPub.publish(test);
 
 		ros::spinOnce();
 		loop_rate.sleep();
 	}
+
 
 	ROS_WARN("[CAL]: Calibration beendet");
 	return 0;

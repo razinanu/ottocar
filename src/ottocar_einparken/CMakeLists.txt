@@ -10,6 +10,7 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   message_generation
   sensor_msgs
+  tf
 )
 
 ## System dependencies are found with CMake's conventions
@@ -95,6 +96,7 @@ catkin_package(
 ## Your package locations should be listed before other locations
 # include_directories(include)
 include_directories(
+  include
   ${catkin_INCLUDE_DIRS}
 )
 
@@ -120,6 +122,9 @@ target_link_libraries(parking ${catkin_LIBRARIES})
 
 add_executable(calibration Calibration.cpp GapCalculator.cpp ParallelController.cpp DriveIntoGap.cpp RingBuffer.cpp)
 target_link_libraries(calibration ${catkin_LIBRARIES})
+
+add_executable(odomTF OdomTF.cpp)
+target_link_libraries(odomTF ${catkin_LIBRARIES})
 
 
 #############

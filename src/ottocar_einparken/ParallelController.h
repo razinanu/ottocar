@@ -26,7 +26,7 @@
 #include <iostream>
 
 /**
- * \brief  Klasse zur Kollisionserkennung
+ * \brief  Kollisionserkennung
  *
  *         Diese Klasse stellt eine Funktion zur Verfügung, die die Daten
  *         das Laserscanners dahingehend auswertet, ob sich ein Hindernis
